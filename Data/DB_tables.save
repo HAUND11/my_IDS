@@ -1,0 +1,10 @@
+IT_request:
+
+|mac_source|ip_source|mac_destination|ip_destination|request|type_request|
+
+|ICMP|ARP|TCP-SYNC|
+
+IP_responce:
+
+|mac_source|ip_source|mac_destination|ip_destination|responce
+|type_responce|

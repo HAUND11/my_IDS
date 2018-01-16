@@ -1,0 +1,17 @@
+IP_request:
+
+|mac_source|ip_source|mac_destination|ip_destination|request|type_request|
+
+|ICMP|ARP|TCP-SYNC|
+
+IP_responce:
+
+|mac_source|ip_source|mac_destination|ip_destination|responce|type_responce|
+
+|ICMP|ARP|TCP-ACK|
+
+stat_data:
+
+|type_data|value|
+
+|forvard|request|responce|интенсивность|
