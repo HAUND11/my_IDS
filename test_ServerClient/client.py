@@ -31,9 +31,11 @@ class SETTINGS_BOT():
         SYN_data = bytes(server_ip[0]+":CONNECT:SYN",encoding='utf-8')
         bot_socket.sendall(SYN_data)
         ACK_data = bot_socket.recv(1024)
-        if ACK_data == bytes(server_ip[0]+":CONNECT:ACK",encoding='utf-8'):
+        ACK_data1 = bot_socket.recv(1024)
+        if ACK_data != b'':
+        # if ACK_data == bytes(server_ip[0]+":CONNECT:ACK",encoding='utf-8'):
             logging.info("BOT START %r",bot_socket)
-            logging.info("STARTING SNIFF NETWORK")
+            logging.info("STARTING SNIFF NETWORK", ACK_data)
             SNIFFER(bot_socket)
 
 class SNIFFER(object):
