@@ -13,15 +13,15 @@ def handle(connection, address):                                                
             SYN_data = connection.recv(1024)
             if SYN_data == bytes(server_name+":CONNECT:SYN",encoding='utf-8'):
                 logger.debug("Received start work %r", SYN_data)
-                crypto_pub_key = crypto.Crypto().init_keys()
-                connection.sendall(bytes(str(crypto_pub_key["e"]),encoding='utf-8'))
-                connection.sendall(bytes(str(crypto_pub_key["n"]),encoding='utf-8'))
-                # connection.sendall(bytes(address[0]+":CONNECT:ACK",encoding='utf-8'))
-                logger.debug("Sent data")
+                crypto_keys = crypto.Crypto()
+                connection.sendall(bytes(str(crypto_keys.init_keys()["e"]),encoding='utf-8'))
+                connection.sendall(bytes(str(crypto_keys.init_keys()["n"]),encoding='utf-8'))
+                logger.debug("Sent keys")
                 while True:
                     packet_headers = connection.recv(1024)
                     if packet_headers != b'':
-                        print(packet_headers)
+                        hi = crypto_keys.decrypted(packet_headers)
+                        print(hi)
     except:
         logger.exception("Problem handling request")
     finally:

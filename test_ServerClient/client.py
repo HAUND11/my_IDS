@@ -1,5 +1,6 @@
 from data_parser import *
 import socket
+import rsa
 import re
 import logging
 
@@ -30,12 +31,15 @@ class SETTINGS_BOT():
         bot_socket.connect((server_ip[0],9000))
         SYN_data = bytes(server_ip[0]+":CONNECT:SYN",encoding='utf-8')
         bot_socket.sendall(SYN_data)
-        ACK_data = bot_socket.recv(1024)
-        ACK_data1 = bot_socket.recv(1024)
-        if ACK_data != b'':
-        # if ACK_data == bytes(server_ip[0]+":CONNECT:ACK",encoding='utf-8'):
+        ACK_pubkey_e = bot_socket.recv(1024)
+        ACK_pubkey_n = bot_socket.recv(1024)
+        pubkey_for_server = rsa.PublicKey(int(ACK_pubkey_n.decode("utf-8")) ,int(ACK_pubkey_e.decode("utf-8")) )
+        if pubkey_for_server["e"] and pubkey_for_server["n"]:
             logging.info("BOT START %r",bot_socket)
-            logging.info("STARTING SNIFF NETWORK", ACK_data)
+            mess = b'hi serv'
+            crypt_mess = rsa.encrypt(mess,pubkey_for_server)
+            bot_socket.sendall(crypt_mess)
+            logging.info("STARTING SNIFF NETWORK")
             SNIFFER(bot_socket)
 
 class SNIFFER(object):
