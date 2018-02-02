@@ -1,4 +1,5 @@
 from data_parser import *
+from arp_scan import *
 import socket
 import rsa
 import re
@@ -9,8 +10,26 @@ class SETTINGS_BOT():
 
     def __init__(self):
         logging.basicConfig(level=logging.DEBUG)
-        server_ip, host_ip,host_mask =SETTINGS_BOT.get_config_settings(self)
+        server_ip, host_ip, host_mask =SETTINGS_BOT.get_config_settings(self)
+        # SETTINGS_BOT.scan_ip_mac_hosts(self,host_ip,host_mask)
         SETTINGS_BOT.connect_to_server(self,server_ip,host_ip)
+
+    def scan_ip_mac_hosts(self,interface_ip,mask):
+        try:
+            logging.basicConfig(level=logging.DEBUG)
+            network_ip = re.findall(r'(\d+).', interface_ip[0] + '.')
+            network_mask = re.findall(r'(\d+).', mask[0] + '.')
+            main_network_ip = [int(network_ip[0]) & int(network_mask[0]), int(network_ip[1]) & int(network_mask[1]),
+                               int(network_ip[2]) & int(network_mask[2]), int(network_ip[3]) & int(network_mask[3])]
+            logging.debug("Main network: %i.%i.%i.%i", main_network_ip[0], main_network_ip[1], main_network_ip[2],
+                          main_network_ip[3])
+            start_sniff = multiprocessing.Process(target=sniff_arp)
+            start_sniff.daemon = True
+            start_sniff.start()
+            scan_arp(main_network_ip, network_mask)
+        except:
+            logging.info("#### Write ip interface and mask network ####")
+            logging.info("#### Example 192.168.2.0 255.255.255.0 ####")
 
     def get_config_settings(self):
         try:

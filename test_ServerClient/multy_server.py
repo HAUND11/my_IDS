@@ -66,4 +66,5 @@ if __name__ == "__main__":
             logging.info("Shutting down process %r", process)
             process.terminate()
             process.join()
+server.close()
 logging.info("All done")

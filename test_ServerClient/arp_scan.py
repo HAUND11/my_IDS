@@ -50,17 +50,17 @@ def start_scan(host_ip):
 		start_sniff1.daemon = False
 		start_sniff1.start()
 
-if __name__ == "__main__":
-	try:
-		logging.basicConfig(level=logging.DEBUG)
-		network_ip = re.findall(r'(\d+).',sys.argv[1]+'.')
-		network_mask = re.findall(r'(\d+).',sys.argv[2]+'.')
-		main_network_ip = [int(network_ip[0])&int(network_mask[0]),int(network_ip[1])&int(network_mask[1]),int(network_ip[2])&int(network_mask[2]),int(network_ip[3])&int(network_mask[3])]
-		logging.debug("Main network: %i.%i.%i.%i", main_network_ip[0],main_network_ip[1],main_network_ip[2],main_network_ip[3])
-		start_sniff = multiprocessing.Process(target=sniff_arp)
-		start_sniff.daemon = True
-		start_sniff.start()
-		scan_arp(main_network_ip,network_mask)
-	except:
-		logging.info("#### Write ip interface and mask network ####")
-		logging.info("#### Example /python3 {fale_name} 192.168.2.0 255.255.255.0 ####")
+# if __name__ == "__main__":
+# 	try:
+# 		logging.basicConfig(level=logging.DEBUG)
+# 		network_ip = re.findall(r'(\d+).',sys.argv[1]+'.')
+# 		network_mask = re.findall(r'(\d+).',sys.argv[2]+'.')
+# 		main_network_ip = [int(network_ip[0])&int(network_mask[0]),int(network_ip[1])&int(network_mask[1]),int(network_ip[2])&int(network_mask[2]),int(network_ip[3])&int(network_mask[3])]
+# 		logging.debug("Main network: %i.%i.%i.%i", main_network_ip[0],main_network_ip[1],main_network_ip[2],main_network_ip[3])
+# 		start_sniff = multiprocessing.Process(target=sniff_arp)
+# 		start_sniff.daemon = True
+# 		start_sniff.start()
+# 		scan_arp(main_network_ip,network_mask)
+# 	except:
+# 		logging.info("#### Write ip interface and mask network ####")
+# 		logging.info("#### Example /python3 {fale_name} 192.168.2.0 255.255.255.0 ####")
