@@ -50,14 +50,24 @@ class SETTINGS_BOT():
         bot_socket.connect((server_ip[0],9000))
         SYN_data = bytes(server_ip[0]+":CONNECT:SYN",encoding='utf-8')
         bot_socket.sendall(SYN_data)
-        ACK_pubkey_e = bot_socket.recv(1024)
-        ACK_pubkey_n = bot_socket.recv(1024)
+        while True:
+            ACK_pubkey_e = bot_socket.recv(1024)
+            if ACK_pubkey_e != b'':
+                bot_socket.sendall(b'True correct pubkey e')
+                break
+        while True:
+            ACK_pubkey_n = bot_socket.recv(1024)
+            if ACK_pubkey_n != b'':
+                bot_socket.sendall(b'True correct pubkey n')
+                break
         pubkey_for_server = rsa.PublicKey(int(ACK_pubkey_n.decode("utf-8")) ,int(ACK_pubkey_e.decode("utf-8")) )
         if pubkey_for_server["e"] and pubkey_for_server["n"]:
             logging.info("BOT START %r",bot_socket)
-            mess = b'hi serv'
-            crypt_mess = rsa.encrypt(mess,pubkey_for_server)
+            server_ip_for_check = re.findall(r'(\d+).', server_ip[0] + '.')
+            controll_number = (int(server_ip_for_check[0])+int(server_ip_for_check[1])+int(server_ip_for_check[2])+int(server_ip_for_check[3]))*9000
+            crypt_mess = rsa.encrypt(bytes(str(controll_number),encoding='utf-8'),pubkey_for_server)
             bot_socket.sendall(crypt_mess)
+
             logging.info("STARTING SNIFF NETWORK")
             SNIFFER(bot_socket)
 
