@@ -1,17 +1,20 @@
 from data_parser import *
 from arp_scan import *
+from static_data_trafic.db import *
 import socket
 import rsa
 import re
 import logging
+import multiprocessing
 
 
 class SETTINGS_BOT():
 
     def __init__(self):
+        DATA.CREATE()
         logging.basicConfig(level=logging.DEBUG)
         server_ip, host_ip, host_mask =SETTINGS_BOT.get_config_settings(self)
-        # SETTINGS_BOT.scan_ip_mac_hosts(self,host_ip,host_mask)
+        SETTINGS_BOT.scan_ip_mac_hosts(self,host_ip,host_mask)
         SETTINGS_BOT.connect_to_server(self,server_ip,host_ip)
 
     def scan_ip_mac_hosts(self,interface_ip,mask):
@@ -46,30 +49,33 @@ class SETTINGS_BOT():
         return server_ip,host_ip,host_mask
 
     def connect_to_server(self,server_ip,host_ip):
-        bot_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-        bot_socket.connect((server_ip[0],9000))
-        SYN_data = bytes(server_ip[0]+":CONNECT:SYN",encoding='utf-8')
-        bot_socket.sendall(SYN_data)
-        while True:
-            ACK_pubkey_e = bot_socket.recv(1024)
-            if ACK_pubkey_e != b'':
-                bot_socket.sendall(b'True correct pubkey e')
-                break
-        while True:
-            ACK_pubkey_n = bot_socket.recv(1024)
-            if ACK_pubkey_n != b'':
-                bot_socket.sendall(b'True correct pubkey n')
-                break
-        pubkey_for_server = rsa.PublicKey(int(ACK_pubkey_n.decode("utf-8")) ,int(ACK_pubkey_e.decode("utf-8")) )
-        if pubkey_for_server["e"] and pubkey_for_server["n"]:
-            logging.info("BOT START %r",bot_socket)
-            server_ip_for_check = re.findall(r'(\d+).', server_ip[0] + '.')
-            controll_number = (int(server_ip_for_check[0])+int(server_ip_for_check[1])+int(server_ip_for_check[2])+int(server_ip_for_check[3]))*9000
-            crypt_mess = rsa.encrypt(bytes(str(controll_number),encoding='utf-8'),pubkey_for_server)
-            bot_socket.sendall(crypt_mess)
+        try:
+            bot_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+            bot_socket.connect((server_ip[0],9000))
+            SYN_data = bytes(server_ip[0]+":CONNECT:SYN",encoding='utf-8')
+            bot_socket.sendall(SYN_data)
+            while True:
+                ACK_pubkey_e = bot_socket.recv(1024)
+                if ACK_pubkey_e != b'':
+                    bot_socket.sendall(b'True correct pubkey e')
+                    break
+            while True:
+                ACK_pubkey_n = bot_socket.recv(1024)
+                if ACK_pubkey_n != b'':
+                    bot_socket.sendall(b'True correct pubkey n')
+                    break
+            pubkey_for_server = rsa.PublicKey(int(ACK_pubkey_n.decode("utf-8")) ,int(ACK_pubkey_e.decode("utf-8")) )
+            if pubkey_for_server["e"] and pubkey_for_server["n"]:
+                logging.info("BOT START %r",bot_socket)
+                server_ip_for_check = re.findall(r'(\d+).', server_ip[0] + '.')
+                controll_number = (int(server_ip_for_check[0])+int(server_ip_for_check[1])+int(server_ip_for_check[2])+int(server_ip_for_check[3]))*9000
+                crypt_mess = rsa.encrypt(bytes(str(controll_number),encoding='utf-8'),pubkey_for_server)
+                bot_socket.sendall(crypt_mess)
 
-            logging.info("STARTING SNIFF NETWORK")
-            SNIFFER(bot_socket)
+                logging.info("STARTING SNIFF NETWORK")
+                SNIFFER(bot_socket)
+        finally:
+            bot_socket.sendall(b'Close connect')
 
 class SNIFFER(object):
 
@@ -79,8 +85,8 @@ class SNIFFER(object):
             data, address = sniff_socket.recvfrom(65535)
             header_packet = PARSER.start_parser(data)
             print(header_packet)
-            if header_packet["3L"]["Protocol_type"] == 1:
-                bot_socket.sendall(data)
+            # if header_packet["3L"]["Protocol_type"] == 1:
+            #     bot_socket.sendall(data)
 
 
 if __name__ == "__main__":
