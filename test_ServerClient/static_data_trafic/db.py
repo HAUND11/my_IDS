@@ -1,23 +1,26 @@
 import sqlite3
 import os
 
-class DATA:
-	def CREATE():
+class DATA():
+	def CREATE(self):
+		try:
+			os.system("rm static_data_trafic/static_data.db")  # clear data base
 
-		os.system("rm static_data_trafic/static_data.db")  # clear data base 
-
-		con = sqlite3.connect("static_data_trafic/static_data.db")
-		cur = con.cursor()   
-		cur.execute("""CREATE TABLE IP_request(id INTEGER PRIMARY KEY AUTOINCREMENT, 
-												Source_mac CHAR,
-												Source_ip INT,
-												Destination_mac CHAR, 
-												Destination_ip INT,
-												Request INT, 
-												Type_protocol CHAR);""")
-		cur.execute("""CREATE TABLE ARP_data_host(id INTEGER PRIMARY KEY AUTOINCREMENT, 
-														Host_ip CHAR,
-														Host_mac CHAR);""")
+			self.con = sqlite3.connect("static_data_trafic/static_data.db")
+			self.cur = self.con.cursor()
+			self.cur.execute("""CREATE TABLE IP_request(id INTEGER PRIMARY KEY AUTOINCREMENT, 
+													Source_mac CHAR,
+													Source_ip INT,
+													Destination_mac CHAR, 
+													Destination_ip INT,
+													Request INT, 
+													Type_protocol CHAR);""")
+			self.cur.execute("""CREATE TABLE ARP_data_host(id INTEGER PRIMARY KEY AUTOINCREMENT, 
+															Host_ip CHAR,
+															Host_mac CHAR);""")
+			return True
+		except:
+			return False
 
 		# con = sqlite3.connect("static_data_trafic/arp_data.db")
 		# cur = con.cursor()	
@@ -31,6 +34,10 @@ class DATA:
 			return False
 		else:
 			return True
+
+	def GET_ALL_DATA_ARP_HOST(self):
+		self.cur.execute("""SELECT * FROM ARP_data_host;""")
+		return self.cur.fetchall()
 
 	def INSERT_ARP_DATA(host_ip, host_mac):
 		con = sqlite3.connect("static_data_trafic/static_data.db")

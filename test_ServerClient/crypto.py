@@ -8,8 +8,8 @@ class Crypto():
     def init_keys(self):
          return self.pubkey
 
-    # def encrypted(self, encrypted_data):
-    #     return rsa.encrypt(encrypted_data, self.pubkey)
+    # def encrypted(self, encrypted_data,pubkey_for_server):
+    #     return rsa.encrypt(encrypted_data, pubkey_for_server)
 
     def decrypted(self,decrypted_data):
         return rsa.decrypt(decrypted_data, self.privkey)

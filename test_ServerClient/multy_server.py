@@ -133,8 +133,8 @@ def handle(connection, address,GUI_data_print):                                 
                             break
 
                 while True:
-                    close_command_bot = connection.recv(1024)
-                    if close_command_bot == b'Close connect':
+                    command_bot = connection.recv(1024)
+                    if command_bot == b'Close connect':
                         try:
                             GUI_data_print.sendall(bytes("{} Closing socket".format(DEBUG), encoding='utf-8'))
                             connection.close()
@@ -142,11 +142,25 @@ def handle(connection, address,GUI_data_print):                                 
                         except:
                             GUI_data_print.sendall(bytes("{} Error closing socket".format(ERROR), encoding='utf-8'))
                     else:
-                        print("main work")
+                        first_command = crypto_keys.decrypted(command_bot)
+                        if first_command == b'warning_incorrect_input_ip':
+                            send_data_structure = {"id": 0,
+                                                   "key_warning": 0,
+                                                   "time": 0,
+                                                   "main_network_ip": 0,
+                                                   "warning": 0}
+                            for index_structure in send_data_structure.keys():
+                                data = connection.recv(1024)
+                                decrypt_data = crypto_keys.decrypted(data)
+                                send_data_structure[index_structure] = decrypt_data
+
+                        print(send_data_structure)
                 break
     except:
         GUI_data_print.sendall(bytes("{} Problem handling".format(ERROR), encoding='utf-8'))
-
+    finally:
+        connection.close()
+        GUI_data_print.close()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
