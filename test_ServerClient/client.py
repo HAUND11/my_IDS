@@ -18,10 +18,10 @@ class SETTINGS_BOT():
         Create_DB_result = DATA.CREATE(self)
         logging.basicConfig(level=logging.DEBUG)
         Get_config_result, server_ip, host_ip, host_mask,main_network_ip = self.get_config_settings()
-        # Scan_result = self.scan_ip_mac_hosts(main_network_ip,host_mask)
+        Scan_result = self.scan_ip_mac_hosts(main_network_ip,host_mask)
         Connect_result, socket_main, pubkey_for_server = self.connect_to_server(server_ip,host_ip)
         time.sleep(15)
-        if Create_DB_result and Get_config_result:# and Scan_result and Connect_result:
+        if Create_DB_result and Get_config_result and Scan_result and Connect_result:
             ip_mac_hosts = DATA.GET_ALL_DATA_ARP_HOST(self)
             self.bot_work_result(True,socket_main,pubkey_for_server,ip_mac_hosts)
             SNIFFER(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server)
@@ -115,13 +115,13 @@ def sniff_packets(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_
                 Control_ip_network_result = CONTROL.control_ip_input_network(packets,ip_mac_hosts)
                 if Control_ip_network_result != True:
                     Control_ip_network_result = "Bad input ip"
-                    print(Control_ip_network_result)
                     send_data_structure = {"id": 10,
                                            "key_warning": 100,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip ,
                                            "warning": "{0} -> {1}".format(packets[0][1].src,packets[0][1].dst)}
-                    SEND_DATA.send_to_server_warning("warning_incorrect_input_ip",socket_main,pubkey_for_server,send_data_structure)
+                    rez = SEND_DATA.send_to_server_warning("warning_incorrect_input_ip",socket_main,pubkey_for_server,send_data_structure)
+                    print(Control_ip_network_result, rez)
             elif check == "Output":
                 Control_ip_network_result = CONTROL.control_ip_output_network(packets,main_network_ip,host_mask,ip_mac_hosts)
                 if Control_ip_network_result != True:
