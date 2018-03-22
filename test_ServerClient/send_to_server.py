@@ -9,10 +9,13 @@ class SEND_DATA(object):
              socket_main.sendall(rsa.encrypt(bytes(command, encoding='utf-8'), pubkey_for_server))
              if socket_main.recv(1024) == b'start':
                  for index_structure in send_data_structure.keys():
-                     socket_main.sendall(bytes(index_structure, encoding='utf-8'))
+                     socket_main.sendall(rsa.encrypt(bytes(index_structure,encoding='utf-8'),pubkey_for_server))
                      if socket_main.recv(1024) == b'next_data':
-                        socket_main.sendall(bytes(str(send_data_structure[index_structure]),encoding='utf-8'))
-                     # socket_main.sendall(rsa.encrypt(bytes(str(send_data_structure[index_structure]),encoding='utf-8'),pubkey_for_server))
+                        if type(send_data_structure[index_structure]) != str:
+                            socket_main.sendall(rsa.encrypt(bytes(str(send_data_structure[index_structure]),encoding='utf-8'),pubkey_for_server))
+                        else:
+                            socket_main.sendall(rsa.encrypt(bytes(send_data_structure[index_structure], encoding='utf-8'),pubkey_for_server))
+#socket_main.sendall(rsa.encrypt(bytes(str(send_data_structure[index_structure]),encoding='utf-8'),pubkey_for_server))
                  # socket_main.sendall(rsa.encrypt(bytes(str(key_warning), encoding='utf-8'), pubkey_for_server))
                  # socket_main.sendall(rsa.encrypt(bytes(str(host_ip), encoding='utf-8'), pubkey_for_server))
                  # socket_main.sendall(rsa.encrypt(bytes(warning, encoding='utf-8'), pubkey_for_server))

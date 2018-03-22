@@ -3,7 +3,8 @@ import multiprocessing,\
     sys, \
     time, \
     threading, \
-    re
+    re, \
+    rsa
 from PyQt5.QtWidgets import QApplication, \
     QBoxLayout, \
     QWidget, \
@@ -16,10 +17,16 @@ from PyQt5.QtWidgets import QApplication, \
 from PyQt5.QtCore import pyqtSlot
 
 server_name = "127.0.0.1"
+
+"""Print data"""
+
 DEBUG = " :: DEBUG :: {}".format(sys.platform)
 INFO = " :: INFO :: {}".format(sys.platform)
 WARNING = " :: WARNING :: {}".format(sys.platform)
 ERROR = " :: ERROR :: {}".format(sys.platform)
+
+"""Warning print
+    tine :: main_network :: id :: key_warning :: messedge"""
 
 class App(QWidget):
 
@@ -29,22 +36,30 @@ class App(QWidget):
         self.initUI()
 
     def initUI(self):
+
         """Buttron bind server"""
+
         self.setWindowTitle(self.title)
         self.button_bind_server = QPushButton('Bind server', self)
         self.button_bind_server.move(1800, 950)
         self.button_bind_server.resize(80,30)
         self.button_bind_server.clicked.connect(self.on_click_bind_server)
+
         """Button close IDS"""
+
         self.button_exit = QPushButton('Close', self)
         self.button_exit.move(1800, 990)
         self.button_exit.resize(80, 30)
         self.button_exit.clicked.connect(self.on_click_exit)
+
         """DEBUG box"""
+
         self.messege_box = QTextEdit(self)
         self.messege_box.move(10,870)
         self.messege_box.resize(1750,150)
+
         """List widget"""
+
         self.ip_list = QListWidget(self)
         self.ip_list.move(10,10)
         self.ip_list.resize(280,850)
@@ -57,8 +72,10 @@ class App(QWidget):
         self.tabs.resize(1460, 850)
         self.tabs.addTab(self.tab_real_time, "Real time")
         self.tabs.move(300,10)
+
         """Real time widgets
             -TextEdit"""
+
         self.tab_real_time.layout = QBoxLayout(0,self)
         self.messege_box_real_time = QTextEdit(self)
         self.param_table = QTableView(self)
@@ -82,8 +99,11 @@ class App(QWidget):
         if GUI_conn != False and GUI_address != False:
             while(True):
                 text_data = GUI_conn.recv(1024)
-                if text_data != b'':
-                    ex.add_text_debug(text_data.decode('utf-8'))
+                text_data = text_data.decode('utf-8')
+                if text_data[0:5] == "DEBUG":
+                    ex.add_text_debug(text_data[5:])
+                elif text_data[0:5] == "REALT":
+                    ex.add_text_real_time(text_data[5:])
 
 
 
@@ -136,44 +156,44 @@ class Server(object): ### основной поток
 def handle(connection, address,GUI_data_print):                                                ### РАБОТА СЕРВЕРА С КЛИЕНТОМ(доп поток)
     import crypto
     try:
-        GUI_data_print.sendall(bytes("{0} {1} Connected {2} at {3}".format(time.ctime(),DEBUG,connection, address),encoding='utf-8'))
+        GUI_data_print.sendall(bytes("DEBUG{0} {1} Connected {2} at {3}".format(time.ctime(),DEBUG,connection, address),encoding='utf-8'))
         while True:
             SYN_data = connection.recv(1024)
             if SYN_data == bytes(server_name+":CONNECT:SYN",encoding='utf-8'):
                 time.sleep(0.5)
-                GUI_data_print.sendall(bytes("{0} {1} Received start work {2}".format(time.ctime(),DEBUG,address), encoding='utf-8'))
-                crypto_keys = crypto.Crypto()
-
+                GUI_data_print.sendall(bytes("DEBUG{0} {1} Received start work {2}".format(time.ctime(),DEBUG,address), encoding='utf-8'))
+                # crypto_keys = crypto.Crypto()
+                (pubkey, privkey) = rsa.newkeys(1024, accurate=True, poolsize=1)
                 while True:
-                    connection.sendall(bytes(str(crypto_keys.init_keys()["e"]),encoding='utf-8'))
+                    connection.sendall(bytes(str(pubkey["e"]),encoding='utf-8'))
                     if connection.recv(1024) == b'True correct pubkey e':
                         break
                 while True:
-                    connection.sendall(bytes(str(crypto_keys.init_keys()["n"]),encoding='utf-8'))
+                    connection.sendall(bytes(str(pubkey["n"]),encoding='utf-8'))
                     if connection.recv(1024) == b'True correct pubkey n':
                         break
-                GUI_data_print.sendall(bytes("{0} {1} Sent keys".format(time.ctime(),DEBUG), encoding='utf-8'))
+                GUI_data_print.sendall(bytes("DEBUG{0} {1} Sent keys".format(time.ctime(),DEBUG), encoding='utf-8'))
                 while True:
                     bot_check_number = connection.recv(1024)
                     if bot_check_number != b'':
-                        bot_controll_number = crypto_keys.decrypted(bot_check_number)
+                        bot_controll_number = rsa.decrypt(bot_check_number,privkey)
                         server_ip_for_check = re.findall(r'(\d+).', server_name + '.')
                         server_controll_nuber = (int(server_ip_for_check[0])+int(server_ip_for_check[1])+int(server_ip_for_check[2])+int(server_ip_for_check[3]))*9000
                         if server_controll_nuber == int(bot_controll_number):
-                            GUI_data_print.sendall(bytes("{0} {1} Check summ is correct".format(time.ctime(),DEBUG), encoding='utf-8'))
+                            GUI_data_print.sendall(bytes("DEBUG{0} {1} Check summ is correct".format(time.ctime(),DEBUG), encoding='utf-8'))
                             break
 
                 while True:
                     command_bot = connection.recv(1024)
                     if command_bot == b'Close connect':
                         try:
-                            GUI_data_print.sendall(bytes("{0} {1} Closing socket".format(time.ctime(),DEBUG), encoding='utf-8'))
+                            GUI_data_print.sendall(bytes("DEBUG{0} {1} Closing socket".format(time.ctime(),DEBUG), encoding='utf-8'))
                             connection.close()
                             break
                         except:
-                            GUI_data_print.sendall(bytes("{0} {1} Error closing socket".format(time.ctime(),ERROR), encoding='utf-8'))
+                            GUI_data_print.sendall(bytes("DEBUG{0} {1} Error closing socket".format(time.ctime(),ERROR), encoding='utf-8'))
                     else:
-                        first_command = crypto_keys.decrypted(command_bot)
+                        first_command = rsa.decrypt(command_bot,privkey)
                         if first_command == b'warning_incorrect_input_ip':
                             connection.sendall(b'start')
                             send_data_structure = {"id": 0,
@@ -183,14 +203,20 @@ def handle(connection, address,GUI_data_print):                                 
                                                    "warning": 0}
                             for index_structure in send_data_structure.keys():
                                 key_structure = connection.recv(1024)
-                                if key_structure != b'':
+                                key_structure_decrypt = rsa.decrypt(key_structure,privkey)
+                                if key_structure_decrypt != b'':
                                     connection.sendall(b'next_data')
                                     data = connection.recv(1024)
-                                # decrypt_data = crypto_keys.decrypted(data)
-                                send_data_structure[key_structure.decode("utf-8")] = data
-                                print(data)
-
-                            GUI_data_print.sendall(bytes(send_data_structure["warning"].decode("utf-8"),encoding="utf-8"))
+                                    data_decrypt = rsa.decrypt(data,privkey)
+                                send_data_structure[key_structure_decrypt.decode("utf-8")] = data_decrypt
+                                print(data_decrypt)
+                            data_print_on_display = "REALT{0} :: {1} :: {2} :: {3} :: {4} :: The ip address does not exist".format(
+                                send_data_structure['time'].decode("utf-8"),
+                                send_data_structure['main_network_ip'].decode("utf-8")[1:-1],
+                                send_data_structure['id'].decode("utf-8"),
+                                send_data_structure['key_warning'].decode("utf-8"),
+                                send_data_structure['warning'].decode("utf-8"))
+                            GUI_data_print.sendall(bytes(data_print_on_display,encoding="utf-8"))
     except:
         GUI_data_print.sendall(bytes("{0} {1} Problem handling".format(time.ctime(),ERROR), encoding='utf-8'))
 
