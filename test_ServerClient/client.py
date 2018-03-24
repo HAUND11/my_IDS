@@ -20,10 +20,10 @@ class SETTINGS_BOT():
         Create_DB_result = DATA.CREATE(self)
         logging.basicConfig(level=logging.DEBUG)
         Get_config_result, server_ip, host_ip, host_mask,main_network_ip = self.get_config_settings()
-        # Scan_result = self.scan_ip_mac_hosts(main_network_ip,host_mask)
+        Scan_result = self.scan_ip_mac_hosts(main_network_ip,host_mask)
         Connect_result, socket_main, pubkey_for_server = self.connect_to_server(server_ip,host_ip)
         time.sleep(15)
-        if Create_DB_result and Get_config_result:# and Scan_result and Connect_result:
+        if Create_DB_result and Get_config_result and Scan_result and Connect_result:
             ip_mac_hosts = DATA.GET_ALL_DATA_ARP_HOST(self)
             self.bot_work_result(True,socket_main,pubkey_for_server,ip_mac_hosts)
             SNIFFER(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server)
@@ -102,12 +102,17 @@ class SETTINGS_BOT():
 class SNIFFER(object):
 
     def __init__(self,socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server):
-        sniff(filter="ip",prn=sniff_packets(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server))
+        sniff(filter="ip" ,prn=sniff_packets(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server))
         # sniff_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
         # while True:
         #     data, address = sniff_socket.recvfrom(65535)
         #     header_packet = PARSER.start_parser(data)
         #     print(header_packet)
+""" key_warning
+    100 - incorrect input ip
+    103 - incorrect input mac
+    101 - incorrect output ip
+    102 - incorrect output mac"""
 
 def sniff_packets(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server):
     def packets_take(packets):
@@ -117,21 +122,49 @@ def sniff_packets(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_
 
             check = check_input_output(packets,main_network_ip,host_mask)
             if check == "Input":
-                warning_id += 1
                 Control_ip_network_result = CONTROL.control_ip_input_network(packets,ip_mac_hosts)
-                if Control_ip_network_result != True:
+                if Control_ip_network_result == 0:
+                    warning_id += 1
                     Control_ip_network_result = "Bad input ip"
                     send_data_structure = {"id": warning_id,
                                            "key_warning": 100,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip ,
                                            "warning": "{0} -> {1}".format(packets[0][1].src,packets[0][1].dst)}
-                    rez = SEND_DATA.send_to_server_warning("warning_incorrect_input_ip",socket_main,pubkey_for_server,send_data_structure)
-                    print(Control_ip_network_result, rez)
+                    rez = SEND_DATA.send_to_server_warning("warning",socket_main,pubkey_for_server,send_data_structure)
+                    print(Control_ip_network_result)
+            elif Control_ip_network_result == 2:
+                warning_id += 1
+                Control_ip_network_result = "Bad input mac"
+                send_data_structure = {"id": warning_id,
+                                       "key_warning": 103,
+                                       "time": time.ctime(),
+                                       "main_network_ip": main_network_ip,
+                                       "warning": "{0}({1}) -> {2}".format(packets[0][1].src, packets[Ether].dst,
+                                                                           packets[0][1].dst)}
+                rez = SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
+                print(Control_ip_network_result)
             elif check == "Output":
                 Control_ip_network_result = CONTROL.control_ip_output_network(packets,main_network_ip,host_mask,ip_mac_hosts)
-                if Control_ip_network_result != True:
+                if Control_ip_network_result == 0:
+                    warning_id += 1
                     Control_ip_network_result = "Bad output ip"
+                    send_data_structure = {"id": warning_id,
+                                           "key_warning": 101,
+                                           "time": time.ctime(),
+                                           "main_network_ip": main_network_ip,
+                                           "warning": "{0} -> {1}".format(packets[0][1].src, packets[0][1].dst)}
+                    rez = SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server,send_data_structure)
+                    print(Control_ip_network_result)
+                elif Control_ip_network_result == 2:
+                    warning_id += 1
+                    Control_ip_network_result = "Bad output mac"
+                    send_data_structure = {"id": warning_id,
+                                           "key_warning": 102,
+                                           "time": time.ctime(),
+                                           "main_network_ip": main_network_ip,
+                                           "warning": "{0}({1}) -> {2}".format(packets[0][1].src,packets[Ether].dst, packets[0][1].dst)}
+                    rez = SEND_DATA.send_to_server_warning("warning", socket_main,pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result)
         except:
             return None

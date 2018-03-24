@@ -153,8 +153,11 @@ class Server(object): ### основной поток
                 process.start()
                 ex.add_text_debug("{0} {1} Started process {2}".format(time.ctime(),DEBUG,process))
 
-def handle(connection, address,GUI_data_print):                                                ### РАБОТА СЕРВЕРА С КЛИЕНТОМ(доп поток)
-    import crypto
+def handle(connection, address,GUI_data_print):
+    ### РАБОТА СЕРВЕРА С КЛИЕНТОМ(доп поток)
+    import server_data_input
+    input_to_server = server_data_input.DATA_INPUT()
+
     try:
         GUI_data_print.sendall(bytes("DEBUG{0} {1} Connected {2} at {3}".format(time.ctime(),DEBUG,connection, address),encoding='utf-8'))
         while True:
@@ -194,31 +197,10 @@ def handle(connection, address,GUI_data_print):                                 
                             GUI_data_print.sendall(bytes("DEBUG{0} {1} Error closing socket".format(time.ctime(),ERROR), encoding='utf-8'))
                     else:
                         first_command = rsa.decrypt(command_bot,privkey)
-                        if first_command == b'warning_incorrect_input_ip':
-                            connection.sendall(b'start')
-                            send_data_structure = {"id": 0,
-                                                   "key_warning": 0,
-                                                   "time": 0,
-                                                   "main_network_ip": 0,
-                                                   "warning": 0}
-                            for index_structure in send_data_structure.keys():
-                                key_structure = connection.recv(1024)
-                                key_structure_decrypt = rsa.decrypt(key_structure,privkey)
-                                if key_structure_decrypt != b'':
-                                    connection.sendall(b'next_data')
-                                    data = connection.recv(1024)
-                                    data_decrypt = rsa.decrypt(data,privkey)
-                                send_data_structure[key_structure_decrypt.decode("utf-8")] = data_decrypt
-                                print(data_decrypt)
-                            data_print_on_display = "REALT{0} :: {1} :: {2} :: {3} :: {4} :: The ip address does not exist".format(
-                                send_data_structure['time'].decode("utf-8"),
-                                send_data_structure['main_network_ip'].decode("utf-8")[1:-1],
-                                send_data_structure['id'].decode("utf-8"),
-                                send_data_structure['key_warning'].decode("utf-8"),
-                                send_data_structure['warning'].decode("utf-8"))
-                            GUI_data_print.sendall(bytes(data_print_on_display,encoding="utf-8"))
+                        if first_command == b'warning':
+                            input_to_server.warning(connection,GUI_data_print,privkey)
     except:
-        GUI_data_print.sendall(bytes("{0} {1} Problem handling".format(time.ctime(),ERROR), encoding='utf-8'))
+        GUI_data_print.sendall(bytes("DEBUG{0} {1} Problem handling".format(time.ctime(),ERROR), encoding='utf-8'))
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
