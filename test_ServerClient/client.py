@@ -9,7 +9,6 @@ import socket,\
 
 from data_parser import *
 from scapy.all import *
-# from arp_scan import *
 from arping_scan import *
 from send_to_server import *
 from headers_protocol_control import *
@@ -19,18 +18,44 @@ from segment_network_data import *
 warning_id = 0
 segment_static_data = {"input_bytes" : 0,
                    "output_bytes" : 0,
+                   "internal_bytes" : 0,
+                   "internal_tcp_syn": 0,
+                   "internal_tcp_rst": 0,
+                   "internal_tcp_ack": 0,
+                   "internal_tcp_syn_ack": 0,
+                   "internal_tcp_psh_ack": 0,
+                   "internal_udp": 0,
                    "input_tcp_syn": 0,
                    "input_tcp_rst": 0,
                    "input_tcp_ack": 0,
+                   "input_tcp_syn_ack": 0,
+                   "input_tcp_psh_ack": 0,
+                   "input_udp": 0,
+                   "output_udp": 0,
+                   "output_tcp_syn_ack": 0,
+                   "output_tcp_psh_ack": 0,
                    "output_tcp_syn": 0,
                    "output_tcp_rst": 0,
                    "output_tcp_ack": 0}
 
 segment_data = {"input_bytes/s" : 0,
                 "output_bytes/s" : 0,
+                "internal_bytes/s": 0,
+                "internal_tcp_syn/s": 0,
+                "internal_tcp_rst/s": 0,
+                "internal_tcp_ack/s": 0,
+                "internal_tcp_syn_ack/s": 0,
+                "internal_tcp_psh_ack/s": 0,
+                "internal_udp/s": 0,
                 "input_tcp_syn/s" : 0,
                 "input_tcp_rst/s" : 0,
                 "input_tcp_ack/s" : 0,
+                "input_tcp_syn_ack/s": 0,
+                "input_tcp_psh_ack/s": 0,
+                "input_udp/s": 0,
+                "output_udp/s": 0,
+                "output_tcp_psh_ack/s": 0,
+                "output_tcp_syn_ack/s": 0,
                 "output_tcp_syn/s": 0,
                 "output_tcp_rst/s": 0,
                 "output_tcp_ack/s": 0}
@@ -40,14 +65,13 @@ class SETTINGS_BOT():
     def __init__(self):
         Create_DB_result = DATA.CREATE(self)
         logging.basicConfig(level=logging.DEBUG)
-        (Get_config_result, server_ip, host_ip, host_mask,main_network_ip, main_network_arping) = self.get_config_settings()
-        Scan_result = self.scan_ip_mac_hosts(main_network_ip,host_mask,main_network_arping)
-        Connect_result, socket_main, pubkey_for_server = self.connect_to_server(server_ip,host_ip)
-        # time.sleep(20)
+        (Get_config_result, configurate_bot) = self.get_config_settings()
+        Scan_result = self.scan_ip_mac_hosts(configurate_bot["main_network_arping"])
+        (Connect_result, socket_main, pubkey_for_server) = self.connect_to_server(configurate_bot["server_ip"],configurate_bot["network_ip"])
         if Create_DB_result and Get_config_result and Scan_result and Connect_result:
             ip_mac_hosts = DATA.GET_ALL_DATA_ARP_HOST(self)
             self.bot_work_result(True,socket_main,pubkey_for_server,ip_mac_hosts)
-            SNIFFER(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server)
+            SNIFFER(configurate_bot["host_ip"],socket_main,configurate_bot["main_network_ip"],configurate_bot["network_mask"],ip_mac_hosts,pubkey_for_server)
         else:
             self.bot_work_result(False, 0, 0,0)
 
@@ -56,17 +80,11 @@ class SETTINGS_BOT():
             print(ip_mac_hosts)
         else:
             socket_main.sendall("Error")
-            # socket_main.sendall(rsa.encrypt(bytes("Error",encoding='utf-8'),pubkey_for_server))
 
-    def scan_ip_mac_hosts(self,main_network_ip,network_mask,main_network_arping):
+    def scan_ip_mac_hosts(self,main_network_arping):
         try:
             logging.basicConfig(level=logging.DEBUG)
             ARP_PING_SCAN.arping_scan(main_network_arping)
-            # start_sniff = multiprocessing.Process(target=sniff_arp)
-            # start_sniff.daemon = True
-            # start_sniff.start()
-            # scan_arp(main_network_ip, network_mask)
-
             return True
         except:
             logging.info("#### Error scanning host ####")
@@ -74,19 +92,20 @@ class SETTINGS_BOT():
 
     def get_config_settings(self):
         try:
+            configurate_bot = {}
             config_file = open("bot_net_config.conf",'r')
             settings_bot = config_file.read()
-            main_network_arping = re.findall(r'main_network-(.*)',settings_bot)
-            server_ip = re.findall(r'ip_server-(.*)',settings_bot)
-            host_ip = re.findall(r'ip_host-(.*)',settings_bot)
-            host_mask = re.findall(r'host_mask-(.*)',settings_bot)
-            network_ip = re.findall(r'(\d+).', host_ip[0] + '.')
-            network_mask = re.findall(r'(\d+).', host_mask[0] + '.')
-            main_network_ip = [int(network_ip[0]) & int(network_mask[0]), int(network_ip[1]) & int(network_mask[1]),
-                               int(network_ip[2]) & int(network_mask[2]), int(network_ip[3]) & int(network_mask[3])]
-
-            DATA.INSERT_ARP_DATA(host_ip[0], "ac:2b:6e:8c:c7:6f")
-            return True, server_ip, network_ip, network_mask,main_network_ip, main_network_arping
+            configurate_bot["main_network_arping"] = re.findall(r'main_network-(.*)',settings_bot)
+            configurate_bot["server_ip"] = re.findall(r'ip_server-(.*)',settings_bot)
+            configurate_bot["host_ip"] = re.findall(r'ip_host-(.*)',settings_bot)
+            configurate_bot["host_mask"] = re.findall(r'host_mask-(.*)',settings_bot)
+            configurate_bot["network_ip"] = re.findall(r'(\d+).', configurate_bot["host_ip"][0] + '.')
+            configurate_bot["network_mask"] = re.findall(r'(\d+).', configurate_bot["host_mask"][0] + '.')
+            configurate_bot["main_network_ip"] = [int(configurate_bot["network_ip"][0]) & int(configurate_bot["network_mask"][0]),
+                                                  int(configurate_bot["network_ip"][1]) & int(configurate_bot["network_mask"][1]),
+                                                  int(configurate_bot["network_ip"][2]) & int(configurate_bot["network_mask"][2]),
+                                                  int(configurate_bot["network_ip"][3]) & int(configurate_bot["network_mask"][3])]
+            return True, configurate_bot
         except IOError:
             logging.error("Error open config file")
             return False, -1,-1,-1
@@ -125,18 +144,17 @@ class SETTINGS_BOT():
             logging.ERROR("Connect error")
             return False, 0, 0
 
+"""
+Main Sniff class
+"""
+
 class SNIFFER(object):
 
-    def __init__(self,socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server):
+    def __init__(self,host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server):
         time_time =  threading.Thread(target=SNIFFER.segment_data_save)
         time_time.daemon = True
         time_time.start()
-        sniff(filter="ip" ,prn=sniff_packets(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server))
-        # sniff_socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
-        # while True:
-        #     data, address = sniff_socket.recvfrom(65535)
-        #     header_packet = PARSER.start_parser(data)
-        #     print(header_packet)
+        sniff(filter="ip" ,prn=sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server))
 
     """
     Mbit/s
@@ -152,25 +170,40 @@ class SNIFFER(object):
 
             segment_data["input_bytes/s"] = segment_static_data["input_bytes"] * 8 / 1024 / 1024 / 10
             segment_data["output_bytes/s"] = segment_static_data["output_bytes"] * 8 / 1024 / 1024 / 10
-            print(segment_static_data)
-            segment_static_data["input_bytes"] = 0
-            segment_static_data["output_bytes"] = 0
+            segment_data["internal_bytes/s"] = segment_static_data["internal_bytes"] * 8 / 1024 / 1024 / 10
+            for index_keys in segment_static_data:
+                if index_keys != "input_bytes" and index_keys != "output_bytes" and index_keys != "internal_bytes":
+                    segment_data[index_keys+"/s"] = segment_static_data[index_keys] / 10
+                    segment_static_data[index_keys] = 0
+                else:
+                    segment_static_data[index_keys] = 0
+                    continue
+
+            print("input bytes - {0} :: output - {1} :: interal - {2}".format(segment_data["input_bytes/s"],
+                                                                              segment_data["output_bytes/s"],
+                                                                              segment_data["internal_bytes/s"]))
 
 
-""" key_warning
-    100 - incorrect input ip
-    103 - incorrect input mac
-    101 - incorrect output ip
-    102 - incorrect output mac"""
+""" 
+    key_warning:
+    100 - incorrect dst ip
+    101 - incorrect src ip
+    102 - incorrect src mac
+    103 - incorrect dst mac
+    104 - incorrect interal src ip
+    105 - incorrect interal dst ip
+    106 - incorrect interal src mac
+    107 - incorrect interal dst mac
+    """
 
-def sniff_packets(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server):
+def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server):
     def packets_take(packets):
         try:
 
             global warning_id
             global segment_static_data
 
-            check = CONTROL.check_input_output(packets,main_network_ip,host_mask)
+            check = CONTROL.check_input_output(host_ip,packets,main_network_ip,host_mask)
             if check == "Input":
 
                 segment_static_data["input_bytes"] = segment_static_data["input_bytes"] + len(packets.original)
@@ -179,7 +212,7 @@ def sniff_packets(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_
                 Control_ip_network_result = CONTROL.control_ip_input_network(packets,ip_mac_hosts)
                 if Control_ip_network_result == 0:
                     warning_id += 1
-                    Control_ip_network_result = "Bad input ip"
+                    Control_ip_network_result = "100 - incorrect dst ip"
                     send_data_structure = {"id": warning_id,
                                            "key_warning": 100,
                                            "time": time.ctime(),
@@ -189,7 +222,7 @@ def sniff_packets(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_
                     print(Control_ip_network_result)
                 elif Control_ip_network_result == 2:
                     warning_id += 1
-                    Control_ip_network_result = "Bad input mac"
+                    Control_ip_network_result = "103 - incorrect dst mac"
                     send_data_structure = {"id": warning_id,
                                            "key_warning": 103,
                                            "time": time.ctime(),
@@ -206,7 +239,7 @@ def sniff_packets(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_
                 Control_ip_network_result = CONTROL.control_ip_output_network(packets,main_network_ip,host_mask,ip_mac_hosts)
                 if Control_ip_network_result == 0:
                     warning_id += 1
-                    Control_ip_network_result = "Bad output ip"
+                    Control_ip_network_result = "101 - incorrect src ip"
                     send_data_structure = {"id": warning_id,
                                            "key_warning": 101,
                                            "time": time.ctime(),
@@ -216,7 +249,7 @@ def sniff_packets(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_
                     print(Control_ip_network_result)
                 elif Control_ip_network_result == 2:
                     warning_id += 1
-                    Control_ip_network_result = "Bad output mac"
+                    Control_ip_network_result = "102 - incorrect src mac"
                     send_data_structure = {"id": warning_id,
                                            "key_warning": 102,
                                            "time": time.ctime(),
@@ -224,6 +257,60 @@ def sniff_packets(socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_
                                            "warning": "{0}({1}) -> {2}".format(packets[0][1].src,packets[0].src, packets[0][1].dst)}
                     rez = SEND_DATA.send_to_server_warning("warning", socket_main,pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result)
+            elif check == "Internal traffic":
+
+                segment_static_data["internal_bytes"] = segment_static_data["internal_bytes"] + len(packets.original)
+                SEGMENT_DATA.segment_data_check(packets, segment_static_data, check)
+
+
+                Control_ip_network_result_src = CONTROL.control_ip_input_network(packets,ip_mac_hosts)
+
+                if Control_ip_network_result_src == 0:
+                    warning_id += 1
+                    Control_ip_network_result_src = "104 - incorrect interal dst ip"
+                    send_data_structure = {"id": warning_id,
+                                           "key_warning": 104,
+                                           "time": time.ctime(),
+                                           "main_network_ip": main_network_ip ,
+                                           "warning": "{0} -> {1}".format(packets[0][1].src,packets[0][1].dst)}
+                    rez = SEND_DATA.send_to_server_warning("warning",socket_main,pubkey_for_server,send_data_structure)
+                    print(Control_ip_network_result_src)
+                elif Control_ip_network_result_src == 2:
+                    warning_id += 1
+                    Control_ip_network_result_src = "106 - incorrect interal dst mac"
+                    send_data_structure = {"id": warning_id,
+                                           "key_warning": 106,
+                                           "time": time.ctime(),
+                                           "main_network_ip": main_network_ip,
+                                           "warning": "{0} -> {2}({1}) ".format(packets[0][1].src, packets[0].dst,
+                                                                               packets[0][1].dst)}
+                    rez = SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
+                    print(Control_ip_network_result_src)
+
+                Control_ip_network_result_dst = CONTROL.control_ip_output_network(packets, main_network_ip, host_mask, ip_mac_hosts)
+
+                if Control_ip_network_result_dst == 0:
+                    warning_id += 1
+                    Control_ip_network_result_dst = "105 - incorrect src ip"
+                    send_data_structure = {"id": warning_id,
+                                           "key_warning": 105,
+                                           "time": time.ctime(),
+                                           "main_network_ip": main_network_ip,
+                                           "warning": "{0} -> {1}".format(packets[0][1].src, packets[0][1].dst)}
+                    rez = SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
+                    print(Control_ip_network_result_dst)
+                elif Control_ip_network_result_dst == 2:
+                    warning_id += 1
+                    Control_ip_network_result_dst = "107 - incorrect src mac"
+                    send_data_structure = {"id": warning_id,
+                                           "key_warning": 107,
+                                           "time": time.ctime(),
+                                           "main_network_ip": main_network_ip,
+                                           "warning": "{0}({1}) -> {2}".format(packets[0][1].src, packets[0].src,
+                                                                               packets[0][1].dst)}
+                    rez = SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
+                    print(Control_ip_network_result_dst)
+
         except:
             return None
 

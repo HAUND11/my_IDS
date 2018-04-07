@@ -21,32 +21,27 @@ class DATA_INPUT(object):
                 data_decrypt = rsa.decrypt(data, privkey)
             send_data_structure[key_structure_decrypt.decode("utf-8")] = data_decrypt
 
+        data_print_on_display = "REALT{0} :: {1} :: {2} :: {3} :: {4} :: ".format(
+            send_data_structure['time'].decode("utf-8"),
+            send_data_structure['main_network_ip'].decode("utf-8")[1:-1],
+            send_data_structure['id'].decode("utf-8"),
+            send_data_structure['key_warning'].decode("utf-8"),
+            send_data_structure['warning'].decode("utf-8"))
+
         if send_data_structure['key_warning'].decode("utf-8") == "100":
-            data_print_on_display = "REALT{0} :: {1} :: {2} :: {3} :: {4} :: The IP address does not exist".format(
-                send_data_structure['time'].decode("utf-8"),
-                send_data_structure['main_network_ip'].decode("utf-8")[1:-1],
-                send_data_structure['id'].decode("utf-8"),
-                send_data_structure['key_warning'].decode("utf-8"),
-                send_data_structure['warning'].decode("utf-8"))
+            data_print_on_display = data_print_on_display + "Incorrect destination ip address"
         elif send_data_structure['key_warning'].decode("utf-8") == "101":
-            data_print_on_display = "REALT{0} :: {1} :: {2} :: {3} :: {4} :: The IP address does not exist in network".format(
-                send_data_structure['time'].decode("utf-8"),
-                send_data_structure['main_network_ip'].decode("utf-8")[1:-1],
-                send_data_structure['id'].decode("utf-8"),
-                send_data_structure['key_warning'].decode("utf-8"),
-                send_data_structure['warning'].decode("utf-8"))
+            data_print_on_display = data_print_on_display + "Incorrect source ip address"
         elif send_data_structure['key_warning'].decode("utf-8") == "102":
-            data_print_on_display = "REALT{0} :: {1} :: {2} :: {3} :: {4} :: The MAC address does not exist in network".format(
-                send_data_structure['time'].decode("utf-8"),
-                send_data_structure['main_network_ip'].decode("utf-8")[1:-1],
-                send_data_structure['id'].decode("utf-8"),
-                send_data_structure['key_warning'].decode("utf-8"),
-                send_data_structure['warning'].decode("utf-8"))
+            data_print_on_display = data_print_on_display + "Incorrect source mac address"
         elif send_data_structure['key_warning'].decode("utf-8") == "103":
-            data_print_on_display = "REALT{0} :: {1} :: {2} :: {3} :: {4} :: The MAC address does not exist in network".format(
-                send_data_structure['time'].decode("utf-8"),
-                send_data_structure['main_network_ip'].decode("utf-8")[1:-1],
-                send_data_structure['id'].decode("utf-8"),
-                send_data_structure['key_warning'].decode("utf-8"),
-                send_data_structure['warning'].decode("utf-8"))
+            data_print_on_display = data_print_on_display + "Incorrect destination mac address"
+        elif send_data_structure['key_warning'].decode("utf-8") == "104":
+            data_print_on_display = data_print_on_display + "Incorrect interal destination ip address"
+        elif send_data_structure['key_warning'].decode("utf-8") == "105":
+            data_print_on_display = data_print_on_display + "Incorrect interal source ip address"
+        elif send_data_structure['key_warning'].decode("utf-8") == "106":
+            data_print_on_display = data_print_on_display + "Incorrect interal destination mac address"
+        elif send_data_structure['key_warning'].decode("utf-8") == "107":
+            data_print_on_display = data_print_on_display + "Incorrect interal source mac address"
         GUI_data_print.sendall(bytes(data_print_on_display, encoding="utf-8"))

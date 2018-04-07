@@ -14,8 +14,5 @@ class SEND_DATA(object):
                             socket_main.sendall(rsa.encrypt(bytes(str(send_data_structure[index_structure]),encoding='utf-8'),pubkey_for_server))
                         else:
                             socket_main.sendall(rsa.encrypt(bytes(send_data_structure[index_structure], encoding='utf-8'),pubkey_for_server))
-#socket_main.sendall(rsa.encrypt(bytes(str(send_data_structure[index_structure]),encoding='utf-8'),pubkey_for_server))
-                 # socket_main.sendall(rsa.encrypt(bytes(str(key_warning), encoding='utf-8'), pubkey_for_server))
-                 # socket_main.sendall(rsa.encrypt(bytes(str(host_ip), encoding='utf-8'), pubkey_for_server))
-                 # socket_main.sendall(rsa.encrypt(bytes(warning, encoding='utf-8'), pubkey_for_server))
-             return True       # socket_main.sendall(rsa.encrypt(data, pubkey_for_server))
+
+             return True

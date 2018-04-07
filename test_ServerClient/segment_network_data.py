@@ -33,20 +33,45 @@ class SEGMENT_DATA(object):
     """
 
     def segment_data_check(headers,segment_data_no,traff):
+        """ check IPv4 """
         if headers[0].type == 2048:
+            """ check TCP / UDP """
             if headers[0][1].proto == 6:
+                """
+                 flags ACK / SYN / RST / SYN_ASK / PSH_ACK
+                """
                 if headers[0][2].flags == 16:
                     if traff == "Input": segment_data_no["input_tcp_ack"] = segment_data_no["input_tcp_ack"] + 1
                     elif traff == "Output": segment_data_no["output_tcp_ack"] = segment_data_no["output_tcp_ack"] + 1
+                    elif traff == "Internal traffic": segment_data_no["internal_tcp_ack"] = segment_data_no["internal_tcp_ack"] + 1
                     return segment_data_no
                 elif headers[0][2].flags == 2:
                     if traff == "Input": segment_data_no["input_tcp_syn"] = segment_data_no["input_tcp_syn"] + 1
                     elif traff == "Output": segment_data_no["output_tcp_syn"] = segment_data_no["output_tcp_syn"] + 1
+                    elif traff == "Internal traffic": segment_data_no["internal_tcp_syn"] = segment_data_no["internal_tcp_syn"] + 1
                     return segment_data_no
                 elif headers[0][2].flags == 4:
                     if traff == "Input": segment_data_no["input_tcp_rst"] = segment_data_no["input_tcp_rst"] + 1
                     elif traff == "Output": segment_data_no["output_tcp_rst"] = segment_data_no["output_tcp_rst"] + 1
+                    elif traff == "Internal traffic": segment_data_no["internal_tcp_rst"] = segment_data_no["internal_tcp_rst"] + 1
                     return segment_data_no
+                elif headers[0][2].flags == 20:
+                    if traff == "Input": segment_data_no["input_tcp_syn_ack"] = segment_data_no["input_tcp_syn_ack"] + 1
+                    elif traff == "Output": segment_data_no["output_tcp_syn_ack"] = segment_data_no["output_tcp_syn_ack"] + 1
+                    elif traff == "Internal traffic": segment_data_no["internal_tcp_syn_ack"] = segment_data_no["internal_tcp_syn_ack"] + 1
+                    return segment_data_no
+                elif headers[0][2].flags == 24:
+                    if traff == "Input": segment_data_no["input_tcp_psh_ack"] = segment_data_no["input_tcp_psh_ack"] + 1
+                    elif traff == "Output": segment_data_no["output_tcp_psh_ack"] = segment_data_no["output_tcp_psh_ack"] + 1
+                    elif traff == "Internal traffic": segment_data_no["internal_tcp_psh_ack"] = segment_data_no["internal_tcp_psh_ack"] + 1
+                    return segment_data_no
+            elif headers[0][1].proto == 17:
+                if traff == "Input": segment_data_no["input_udp"] = segment_data_no["input_udp"] + 1
+                elif traff == "Output": segment_data_no["output_udp"] = segment_data_no["output_udp"] + 1
+                elif traff == "Internal traffic": segment_data_no["internal_udp"] = segment_data_no["output_udp"] + 1
+                return segment_data_no
+
+
         else:
             return None
 
