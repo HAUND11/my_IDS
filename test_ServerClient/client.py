@@ -16,7 +16,9 @@ from static_data_trafic.db import *
 from segment_network_data import *
 
 warning_id = 0
-segment_static_data = {"input_bytes" : 0,
+segment_static_data = {"arp_1" : 0,
+                       "arp_2" : 0,
+                    "input_bytes" : 0,
                    "output_bytes" : 0,
                    "internal_bytes" : 0,
                    "internal_tcp_syn": 0,
@@ -206,7 +208,7 @@ class SNIFFER(object):
         time_time =  threading.Thread(target=SNIFFER.segment_data_save)
         time_time.daemon = True
         time_time.start()
-        sniff(filter="icmp",prn=sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server))
+        sniff(prn=sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server))
 
     """
     Mbit/s
@@ -224,6 +226,7 @@ class SNIFFER(object):
             segment_data["input_bytes/s"] = segment_static_data["input_bytes"] * 8 / 1024 / 1024 / 10
             segment_data["output_bytes/s"] = segment_static_data["output_bytes"] * 8 / 1024 / 1024 / 10
             segment_data["internal_bytes/s"] = segment_static_data["internal_bytes"] * 8 / 1024 / 1024 / 10
+            print(segment_static_data["arp_1"], segment_static_data["arp_2"])
             for index_keys in segment_static_data:
                 if index_keys != "input_bytes" and index_keys != "output_bytes" and index_keys != "internal_bytes":
                     segment_data[index_keys+"/s"] = segment_static_data[index_keys] / 10
@@ -244,13 +247,13 @@ class SNIFFER(object):
 
 """
 key_warning:
-    100 : incorrect dst ip
-    102 : incorrect src mac
-    103 : incorrect dst mac
-    104 : incorrect interal src ip
-    105 : incorrect interal dst ip
-    106 : incorrect interal src mac
-    107 : incorrect interal dst macv
+    100 : Incorrect dst ip
+    102 : Incorrect src mac
+    103 : Incorrect dst mac
+    104 : Incorrect interal src ip
+    105 : Incorrect interal dst ip
+    106 : Incorrect interal src mac
+    107 : Incorrect interal dst macv
     108 : Net Unreachable 
     109 : Host Unreachable 
     110 : Protocol Unreachable 
@@ -297,7 +300,7 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 100,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip ,
-                                           "warning": "{0} -> {1} [{2}]".format(packets[0][1].src,packets[0][1].dst,packets[0][1].id)}
+                                           "warning": "{0} -> {1} [{2}] Incorrect dst ip".format(packets[0][1].src,packets[0][1].dst,packets[0][1].id)}
                     SEND_DATA.send_to_server_warning("warning",socket_main,pubkey_for_server,send_data_structure)
                     print(Control_ip_network_result)
                 elif Control_ip_network_result == 2:
@@ -307,7 +310,7 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 103,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip,
-                                           "warning": "{0} -> {2}({1}) [{3}] ".format(packets[0][1].src, packets[0].dst,
+                                           "warning": "{0} -> {2}({1}) [{3}] Incorrect dst mac".format(packets[0][1].src, packets[0].dst,
                                                                                packets[0][1].dst,packets[0][1].id)}
                     SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result)
@@ -323,7 +326,7 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 101,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip,
-                                           "warning": "{0} -> {1} [{2}]".format(packets[0][1].src, packets[0][1].dst,packets[0][1].id)}
+                                           "warning": "{0} -> {1} [{2}] Incorrect src ip".format(packets[0][1].src, packets[0][1].dst,packets[0][1].id)}
                     SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server,send_data_structure)
                     print(Control_ip_network_result)
                 elif Control_ip_network_result == 2:
@@ -333,7 +336,7 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 102,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip,
-                                           "warning": "{0}({1}) -> {2} [{3}]".format(packets[0][1].src,packets[0].src, packets[0][1].dst,packets[0][1].id)}
+                                           "warning": "{0}({1}) -> {2} [{3}] Incorrect src mac".format(packets[0][1].src,packets[0].src, packets[0][1].dst,packets[0][1].id)}
                     SEND_DATA.send_to_server_warning("warning", socket_main,pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result)
             elif check == "Internal traffic":
@@ -349,7 +352,7 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 104,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip ,
-                                           "warning": "{0} -> {1} [{2}]".format(packets[0][1].src,packets[0][1].dst,packets[0][1].id)}
+                                           "warning": "{0} -> {1} [{2}] Incorrect interal dst ip".format(packets[0][1].src,packets[0][1].dst,packets[0][1].id)}
                     rez = SEND_DATA.send_to_server_warning("warning",socket_main,pubkey_for_server,send_data_structure)
                     print(Control_ip_network_result_src)
                 elif Control_ip_network_result_src == 2:
@@ -359,7 +362,7 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 106,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip,
-                                           "warning": "{0} -> {2}({1}) [{3}] ".format(packets[0][1].src, packets[0].dst,
+                                           "warning": "{0} -> {2}({1}) [{3}] Incorrect interal dst mac".format(packets[0][1].src, packets[0].dst,
                                                                                packets[0][1].dst,packets[0][1].id)}
                     SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result_src)
@@ -373,7 +376,7 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 105,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip,
-                                           "warning": "{0} -> {1} [{2}]".format(packets[0][1].src, packets[0][1].dst,packets[0][1].id)}
+                                           "warning": "{0} -> {1} [{2}] Incorrect interal dst ip".format(packets[0][1].src, packets[0][1].dst,packets[0][1].id)}
                     SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result_dst)
                 elif Control_ip_network_result_dst == 2:
@@ -383,24 +386,32 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 107,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip,
-                                           "warning": "{0}({1}) -> {2} [{3}]".format(packets[0][1].src, packets[0].src,
+                                           "warning": "{0}({1}) -> {2} [{3}] Incorrect interal src mac".format(packets[0][1].src, packets[0].src,
                                                                                packets[0][1].dst,packets[0][1].id)}
                     SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result_dst)
 
-            (check_type_headers, headers_type, headers_code) = CONTROL.ckeck_headerst_type_protocol(packets)
+            (check_type_headers, type_proto ,headers_type, headers_code) = CONTROL.ckeck_headerst_type_protocol(packets)
 
             if check_type_headers ==  True:
-                warning_id += 1
-                Control_ip_network_result_dst = key_warning_structure[headers_type][headers_type]
+                if type_proto == 1:
+                    warning_id += 1
+                    Control_ip_network_result_headers = key_warning_structure[headers_type][headers_type]
+
+                    if int(Control_ip_network_result_headers[0:3]) == 111:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Port {1} in host {0} unreachable".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    else:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}]".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+
                 send_data_structure = {"id": warning_id,
-                                       "key_warning": int(Control_ip_network_result_dst[0:3]),
+                                       "key_warning": int(Control_ip_network_result_headers[0:3]),
                                        "time": time.ctime(),
                                        "main_network_ip": main_network_ip,
-                                       "warning": "{0} -> {1} [{2}]".format(packets[0][1].src,
-                                                                                 packets[0][1].dst, packets[0][1].id)}
+                                       "warning": warning_string}
                 SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
-                print(Control_ip_network_result_dst)
+                print(Control_ip_network_result_headers)
 
 
         except:

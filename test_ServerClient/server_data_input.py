@@ -1,11 +1,44 @@
 import rsa, \
         socket
 
+print_mess_warning = {
+    100 : 'Incorrect dst ip',
+    101 : "Incorrect src ip",
+    102 : 'Incorrect src mac',
+    103 : 'Incorrect dst mac',
+    104 : 'Incorrect interal src ip',
+    105 : 'Incorrect interal dst ip',
+    106 : 'Incorrect interal src mac',
+    107 : 'Incorrect interal dst macv',
+    108 : 'Net Unreachable ',
+    109 : 'Host Unreachable ',
+    110 : 'Protocol Unreachable',
+    111 : 'Port Unreachable '	,
+    112 : "Fragmentation Needed and Don't Fragment was Set",
+    113 : 'Source Route Failed ',
+    114 : 'Destination Network Unknown',
+    115 : 'Destination Host Unknown ',
+    116 : 'Source Host Isolated ',
+    117 : 'Communication with Destination Network is Administratively Prohibited',
+    118 : 'Communication with Destination Host is Administratively Prohibited ',
+    119 : 'Destination Network Unreachable for Type of Service' ,
+    120	: 'Destination Host Unreachable for Type of Service' ,
+    121 : 'Communication Administratively Prohibited ',
+    122 : 'Host Precedence Violation ',
+    123 : 'Precedence cutoff in effect',
+    124 : 'Time to Live exceeded in Transit',
+    125 : 'Fragment Reassembly Time Exceeded' ,
+    126 : 'Pointer indicates the error' 	,
+    127 : 'Missing a Required Option ',
+    128 : 'Bad Length'}
 
 
 class DATA_INPUT(object):
 
     def warning(self,connection,GUI_data_print,privkey):
+
+        global print_mess_warning
+
         connection.sendall(b'start')
         send_data_structure = {"id": 0,
                                "key_warning": 0,
@@ -21,27 +54,13 @@ class DATA_INPUT(object):
                 data_decrypt = rsa.decrypt(data, privkey)
             send_data_structure[key_structure_decrypt.decode("utf-8")] = data_decrypt
 
-        data_print_on_display = "REALT{0} :: {1} :: {2} :: {3} :: {4} :: ".format(
+        data_print_on_display = "REALT{0} :: {1} :: {2} :: {3} :: {4} ".format(
             send_data_structure['time'].decode("utf-8"),
             send_data_structure['main_network_ip'].decode("utf-8")[1:-1],
             send_data_structure['id'].decode("utf-8"),
             send_data_structure['key_warning'].decode("utf-8"),
             send_data_structure['warning'].decode("utf-8"))
 
-        if send_data_structure['key_warning'].decode("utf-8") == "100":
-            data_print_on_display = data_print_on_display + "Incorrect destination ip address"
-        elif send_data_structure['key_warning'].decode("utf-8") == "101":
-            data_print_on_display = data_print_on_display + "Incorrect source ip address"
-        elif send_data_structure['key_warning'].decode("utf-8") == "102":
-            data_print_on_display = data_print_on_display + "Incorrect source mac address"
-        elif send_data_structure['key_warning'].decode("utf-8") == "103":
-            data_print_on_display = data_print_on_display + "Incorrect destination mac address"
-        elif send_data_structure['key_warning'].decode("utf-8") == "104":
-            data_print_on_display = data_print_on_display + "Incorrect interal destination ip address"
-        elif send_data_structure['key_warning'].decode("utf-8") == "105":
-            data_print_on_display = data_print_on_display + "Incorrect interal source ip address"
-        elif send_data_structure['key_warning'].decode("utf-8") == "106":
-            data_print_on_display = data_print_on_display + "Incorrect interal destination mac address"
-        elif send_data_structure['key_warning'].decode("utf-8") == "107":
-            data_print_on_display = data_print_on_display + "Incorrect interal source mac address"
+        # data_print_on_display = data_print_on_display + print_mess_warning[int(send_data_structure['key_warning'].decode("utf-8"))]
+
         GUI_data_print.sendall(bytes(data_print_on_display, encoding="utf-8"))

@@ -77,6 +77,9 @@ class SEGMENT_DATA(object):
                 elif traff_check == "Output": segment_data_icmp["Output_icmp_{0}_{1}".format(headers[0][2].type,headers[0][2].code)] = segment_data_icmp["Output_icmp_{0}_{1}".format(headers[0][2].type,headers[0][2].code)] + 1
                 elif traff_check == "Internal traffic": segment_data_icmp["Internal_icmp_{0}_{1}".format(headers[0][2].type,headers[0][2].code)] = segment_data_icmp["Internal_icmp_{0}_{1}".format(headers[0][2].type,headers[0][2].code)] + 1
                 return segment_data_no
+        elif headers[0].type == 2054:
+            segment_data_no["arp_{}".format(headers[0][1].op)] = segment_data_no["arp_{}".format(headers[0][1].op)] + 1
+            return  segment_data_no
 
 
         else:
