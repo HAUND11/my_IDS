@@ -14,5 +14,3 @@ class SEND_DATA(object):
                             socket_main.sendall(rsa.encrypt(bytes(str(send_data_structure[index_structure]),encoding='utf-8'),pubkey_for_server))
                         else:
                             socket_main.sendall(rsa.encrypt(bytes(send_data_structure[index_structure], encoding='utf-8'),pubkey_for_server))
-
-             return True

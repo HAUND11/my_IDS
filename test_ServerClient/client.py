@@ -38,27 +38,79 @@ segment_static_data = {"input_bytes" : 0,
                    "output_tcp_rst": 0,
                    "output_tcp_ack": 0}
 
+key_warning_structure = {
+    3 : { 0 : "108-Net Unreachable",
+     1 :  "109-Host Unreachable ",
+     2 : "110-Protocol Unreachable",
+     3 :  "111-Port Unreachable" 	,
+     4 :  "112-Fragmentation Needed and Don't Fragment was Set",
+     5 :  "113-Source Route Failed ",
+     6 : "114-Destination Network Unknown",
+     7 : "115-Destination Host Unknown ",
+     8 : "116-Source Host Isolated ",
+     9 : "117-Communication with Destination Network is Administratively Prohibited",
+     10 : "118-Communication with Destination Host is Administratively Prohibited ",
+     11 : "119-Destination Network Unreachable for Type of Service ",
+     12 : "120-Destination Host Unreachable for Type of Service ",
+     13 : "121-Communication Administratively Prohibited ",
+     14 : "122-Host Precedence Violation ",
+     15 : "123-Precedence cutoff in effect"},
+    11 : { 0 : "124-Time to Live exceeded in Transit",
+     1 : "125-Fragment Reassembly Time Exceeded"},
+    12 : { 0 : "126-Pointer indicates the error 	",
+     1 : "127-Missing a Required Option ",
+     2 : "128-Bad Length"}}
+
+"""
+ICMP:
+type 3 >>>>>
+0 	Net Unreachable 	[RFC792]
+1 	Host Unreachable 	[RFC792]
+2 	Protocol Unreachable 	[RFC792]
+3 	Port Unreachable 	[RFC792]
+4 	Fragmentation Needed and Don't Fragment was Set 	[RFC792]
+5 	Source Route Failed 	[RFC792]
+6 	Destination Network Unknown 	[RFC1122]
+7 	Destination Host Unknown 	[RFC1122]
+8 	Source Host Isolated 	[RFC1122]
+9 	Communication with Destination Network is Administratively Prohibited 	[RFC1122]
+10 	Communication with Destination Host is Administratively Prohibited 	[RFC1122]
+11 	Destination Network Unreachable for Type of Service 	[RFC1122]
+12 	Destination Host Unreachable for Type of Service 	[RFC1122]
+13 	Communication Administratively Prohibited 	[RFC1812]
+14 	Host Precedence Violation 	[RFC1812]
+15 	Precedence cutoff in effect
+type 11 >>>>>
+0 	Time to Live exceeded in Transit 	
+1 	Fragment Reassembly Time Exceeded 	
+type 12 >>>>>
+0 	Pointer indicates the error 	
+1 	Missing a Required Option 	[RFC1108]
+2 	Bad Length
+"""
+segment_data_icmp = {"Input_icmp_0_0" : 0,"Input_icmp_8_0": 0,
+                     "Input_icmp_3_0": 0,"Input_icmp_3_1": 0,"Input_icmp_3_2": 0,"Input_icmp_3_3": 0,"Input_icmp_3_4": 0,
+                     "Input_icmp_3_5": 0,"Input_icmp_3_6": 0,"Input_icmp_3_7": 0,"Input_icmp_3_8": 0,"Input_icmp_3_9": 0,
+                     "Input_icmp_3_10": 0,"Input_icmp_3_11": 0,"Input_icmp_3_12": 0,"Input_icmp_3_13": 0,"Input_icmp_3_14": 0,"Input_icmp_3_15": 0,
+                     "Input_icmp_11_0": 0,"Input_icmp_11_1": 0,
+                     "Input_icmp_12_0": 0,"Input_icmp_12_1": 0,"Input_icmp_12_2": 0,
+                     "Output_icmp_0_0": 0, "Output_icmp_8_0": 0,
+                     "Output_icmp_3_0": 0, "Output_icmp_3_1": 0, "Output_icmp_3_2": 0, "Output_icmp_3_3": 0, "Output_icmp_3_4": 0,
+                     "Output_icmp_3_5": 0, "Output_icmp_3_6": 0, "Output_icmp_3_7": 0, "Output_icmp_3_8": 0, "Output_icmp_3_9": 0,
+                     "Output_icmp_3_10": 0, "Output_icmp_3_11": 0, "Output_icmp_3_12": 0, "Output_icmp_3_13": 0, "Output_icmp_3_14": 0, "Output_icmp_3_15": 0,
+                     "Output_icmp_11_0": 0, "Output_icmp_11_1": 0,
+                     "Output_icmp_12_0": 0, "Output_icmp_12_1": 0, "Output_icmp_12_2": 0,
+                     "Internal_icmp_0_0": 0, "Internal_icmp_8_0": 0,
+                     "Internal_icmp_3_0": 0, "Internal_icmp_3_1": 0, "Internal_icmp_3_2": 0, "Internal_icmp_3_3": 0, "Internal_icmp_3_4": 0,
+                     "Internal_icmp_3_5": 0, "Internal_icmp_3_6": 0, "Internal_icmp_3_7": 0, "Internal_icmp_3_8": 0, "Internal_icmp_3_9": 0,
+                     "Internal_icmp_3_10": 0, "Internal_icmp_3_11": 0, "Internal_icmp_3_12": 0, "Internal_icmp_3_13": 0, "Internal_icmp_3_14": 0, "Internal_icmp_3_15": 0,
+                     "Internal_icmp_11_0": 0, "Internal_icmp_11_1": 0,
+                     "Internal_icmp_12_0": 0, "Internal_icmp_12_1": 0, "Internal_icmp_12_2": 0,
+                     }
+
 segment_data = {"input_bytes/s" : 0,
                 "output_bytes/s" : 0,
-                "internal_bytes/s": 0,
-                "internal_tcp_syn/s": 0,
-                "internal_tcp_rst/s": 0,
-                "internal_tcp_ack/s": 0,
-                "internal_tcp_syn_ack/s": 0,
-                "internal_tcp_psh_ack/s": 0,
-                "internal_udp/s": 0,
-                "input_tcp_syn/s" : 0,
-                "input_tcp_rst/s" : 0,
-                "input_tcp_ack/s" : 0,
-                "input_tcp_syn_ack/s": 0,
-                "input_tcp_psh_ack/s": 0,
-                "input_udp/s": 0,
-                "output_udp/s": 0,
-                "output_tcp_psh_ack/s": 0,
-                "output_tcp_syn_ack/s": 0,
-                "output_tcp_syn/s": 0,
-                "output_tcp_rst/s": 0,
-                "output_tcp_ack/s": 0}
+                "internal_bytes/s": 0}
 
 class SETTINGS_BOT():
 
@@ -154,7 +206,7 @@ class SNIFFER(object):
         time_time =  threading.Thread(target=SNIFFER.segment_data_save)
         time_time.daemon = True
         time_time.start()
-        sniff(filter="ip" ,prn=sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server))
+        sniff(filter="icmp",prn=sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server))
 
     """
     Mbit/s
@@ -167,6 +219,7 @@ class SNIFFER(object):
 
             global segment_data
             global segment_static_data
+            global segment_data_icmp
 
             segment_data["input_bytes/s"] = segment_static_data["input_bytes"] * 8 / 1024 / 1024 / 10
             segment_data["output_bytes/s"] = segment_static_data["output_bytes"] * 8 / 1024 / 1024 / 10
@@ -179,22 +232,47 @@ class SNIFFER(object):
                     segment_static_data[index_keys] = 0
                     continue
 
+            for index_keys_icmp in segment_data_icmp:
+                segment_data[index_keys_icmp+"/s"] = segment_data_icmp[index_keys_icmp] / 10
+                segment_data_icmp[index_keys_icmp] = 0
+
+            # print(segment_data)
             print("input bytes - {0} :: output - {1} :: interal - {2}".format(segment_data["input_bytes/s"],
                                                                               segment_data["output_bytes/s"],
                                                                               segment_data["internal_bytes/s"]))
 
 
-""" 
-    key_warning:
-    100 - incorrect dst ip
-    101 - incorrect src ip
-    102 - incorrect src mac
-    103 - incorrect dst mac
-    104 - incorrect interal src ip
-    105 - incorrect interal dst ip
-    106 - incorrect interal src mac
-    107 - incorrect interal dst mac
-    """
+"""
+key_warning:
+    100 : incorrect dst ip
+    102 : incorrect src mac
+    103 : incorrect dst mac
+    104 : incorrect interal src ip
+    105 : incorrect interal dst ip
+    106 : incorrect interal src mac
+    107 : incorrect interal dst macv
+    108 : Net Unreachable 
+    109 : Host Unreachable 
+    110 : Protocol Unreachable 
+    111 : Port Unreachable 	
+    112 : Fragmentation Needed and Don't Fragment was Set 
+    113 : Source Route Failed 
+    114 : Destination Network Unknown
+    115 : Destination Host Unknown 
+    116 : Source Host Isolated 
+    117 : Communication with Destination Network is Administratively Prohibited 
+    118 : Communication with Destination Host is Administratively Prohibited 
+    119 : Destination Network Unreachable for Type of Service 
+    120	: Destination Host Unreachable for Type of Service 
+    121 : Communication Administratively Prohibited 
+    122 : Host Precedence Violation 
+    123 : Precedence cutoff in effect
+    124 : Time to Live exceeded in Transit 	
+    125 : Fragment Reassembly Time Exceeded 	
+    126 : Pointer indicates the error 	
+    127 : Missing a Required Option 
+    128 : Bad Length
+"""
 
 def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server):
     def packets_take(packets):
@@ -202,12 +280,14 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
 
             global warning_id
             global segment_static_data
+            global key_warning_structure
 
             check = CONTROL.check_input_output(host_ip,packets,main_network_ip,host_mask)
+            SEGMENT_DATA.segment_data_check(packets, segment_static_data, segment_data_icmp, check)
+
             if check == "Input":
 
                 segment_static_data["input_bytes"] = segment_static_data["input_bytes"] + len(packets.original)
-                SEGMENT_DATA.segment_data_check(packets,segment_static_data,check)
 
                 Control_ip_network_result = CONTROL.control_ip_input_network(packets,ip_mac_hosts)
                 if Control_ip_network_result == 0:
@@ -217,8 +297,8 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 100,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip ,
-                                           "warning": "{0} -> {1}".format(packets[0][1].src,packets[0][1].dst)}
-                    rez = SEND_DATA.send_to_server_warning("warning",socket_main,pubkey_for_server,send_data_structure)
+                                           "warning": "{0} -> {1} [{2}]".format(packets[0][1].src,packets[0][1].dst,packets[0][1].id)}
+                    SEND_DATA.send_to_server_warning("warning",socket_main,pubkey_for_server,send_data_structure)
                     print(Control_ip_network_result)
                 elif Control_ip_network_result == 2:
                     warning_id += 1
@@ -227,14 +307,13 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 103,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip,
-                                           "warning": "{0} -> {2}({1}) ".format(packets[0][1].src, packets[0].dst,
-                                                                               packets[0][1].dst)}
-                    rez = SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
+                                           "warning": "{0} -> {2}({1}) [{3}] ".format(packets[0][1].src, packets[0].dst,
+                                                                               packets[0][1].dst,packets[0][1].id)}
+                    SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result)
             elif check == "Output":
 
                 segment_static_data["output_bytes"] = segment_static_data["output_bytes"] + len(packets.original)
-                SEGMENT_DATA.segment_data_check(packets, segment_static_data, check)
 
                 Control_ip_network_result = CONTROL.control_ip_output_network(packets,main_network_ip,host_mask,ip_mac_hosts)
                 if Control_ip_network_result == 0:
@@ -244,8 +323,8 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 101,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip,
-                                           "warning": "{0} -> {1}".format(packets[0][1].src, packets[0][1].dst)}
-                    rez = SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server,send_data_structure)
+                                           "warning": "{0} -> {1} [{2}]".format(packets[0][1].src, packets[0][1].dst,packets[0][1].id)}
+                    SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server,send_data_structure)
                     print(Control_ip_network_result)
                 elif Control_ip_network_result == 2:
                     warning_id += 1
@@ -254,14 +333,12 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 102,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip,
-                                           "warning": "{0}({1}) -> {2}".format(packets[0][1].src,packets[0].src, packets[0][1].dst)}
-                    rez = SEND_DATA.send_to_server_warning("warning", socket_main,pubkey_for_server, send_data_structure)
+                                           "warning": "{0}({1}) -> {2} [{3}]".format(packets[0][1].src,packets[0].src, packets[0][1].dst,packets[0][1].id)}
+                    SEND_DATA.send_to_server_warning("warning", socket_main,pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result)
             elif check == "Internal traffic":
 
                 segment_static_data["internal_bytes"] = segment_static_data["internal_bytes"] + len(packets.original)
-                SEGMENT_DATA.segment_data_check(packets, segment_static_data, check)
-
 
                 Control_ip_network_result_src = CONTROL.control_ip_input_network(packets,ip_mac_hosts)
 
@@ -272,7 +349,7 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 104,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip ,
-                                           "warning": "{0} -> {1}".format(packets[0][1].src,packets[0][1].dst)}
+                                           "warning": "{0} -> {1} [{2}]".format(packets[0][1].src,packets[0][1].dst,packets[0][1].id)}
                     rez = SEND_DATA.send_to_server_warning("warning",socket_main,pubkey_for_server,send_data_structure)
                     print(Control_ip_network_result_src)
                 elif Control_ip_network_result_src == 2:
@@ -282,9 +359,9 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 106,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip,
-                                           "warning": "{0} -> {2}({1}) ".format(packets[0][1].src, packets[0].dst,
-                                                                               packets[0][1].dst)}
-                    rez = SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
+                                           "warning": "{0} -> {2}({1}) [{3}] ".format(packets[0][1].src, packets[0].dst,
+                                                                               packets[0][1].dst,packets[0][1].id)}
+                    SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result_src)
 
                 Control_ip_network_result_dst = CONTROL.control_ip_output_network(packets, main_network_ip, host_mask, ip_mac_hosts)
@@ -296,8 +373,8 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 105,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip,
-                                           "warning": "{0} -> {1}".format(packets[0][1].src, packets[0][1].dst)}
-                    rez = SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
+                                           "warning": "{0} -> {1} [{2}]".format(packets[0][1].src, packets[0][1].dst,packets[0][1].id)}
+                    SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result_dst)
                 elif Control_ip_network_result_dst == 2:
                     warning_id += 1
@@ -306,10 +383,25 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                                            "key_warning": 107,
                                            "time": time.ctime(),
                                            "main_network_ip": main_network_ip,
-                                           "warning": "{0}({1}) -> {2}".format(packets[0][1].src, packets[0].src,
-                                                                               packets[0][1].dst)}
-                    rez = SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
+                                           "warning": "{0}({1}) -> {2} [{3}]".format(packets[0][1].src, packets[0].src,
+                                                                               packets[0][1].dst,packets[0][1].id)}
+                    SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result_dst)
+
+            (check_type_headers, headers_type, headers_code) = CONTROL.ckeck_headerst_type_protocol(packets)
+
+            if check_type_headers ==  True:
+                warning_id += 1
+                Control_ip_network_result_dst = key_warning_structure[headers_type][headers_type]
+                send_data_structure = {"id": warning_id,
+                                       "key_warning": int(Control_ip_network_result_dst[0:3]),
+                                       "time": time.ctime(),
+                                       "main_network_ip": main_network_ip,
+                                       "warning": "{0} -> {1} [{2}]".format(packets[0][1].src,
+                                                                                 packets[0][1].dst, packets[0][1].id)}
+                SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
+                print(Control_ip_network_result_dst)
+
 
         except:
             return None

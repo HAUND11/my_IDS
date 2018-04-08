@@ -51,3 +51,15 @@ class CONTROL(object):
             return "Input"
         else:
             return "Forvard"
+
+    def ckeck_headerst_type_protocol(headers_packet):
+        """ check IPv4 """
+        if headers_packet[0].type == 2048:
+            """ check ICMP"""
+            print(headers_packet[0][1].proto)
+            if headers_packet[0][1].proto == 1:
+                return True, headers_packet[0][2].type, headers_packet[0][2].code
+
+        return False, None, None
+
+
