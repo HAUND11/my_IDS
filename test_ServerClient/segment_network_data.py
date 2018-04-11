@@ -31,7 +31,8 @@ class SEGMENT_DATA(object):
     SYN=2
     RST=4
     ACK+PSH=24
-    SYN+ACK=20
+    SYN+ACK=18
+    RST+ACR=20
     """
 
     def segment_data_check(headers,segment_data_no,segment_data_icmp,traff_check):
@@ -52,12 +53,17 @@ class SEGMENT_DATA(object):
                     elif traff_check == "Output": segment_data_no["output_tcp_syn"] = segment_data_no["output_tcp_syn"] + 1
                     elif traff_check == "Internal traffic": segment_data_no["internal_tcp_syn"] = segment_data_no["internal_tcp_syn"] + 1
                     return segment_data_no
+                elif headers[0][2].flags == 20:
+                    if traff_check == "Input": segment_data_no["input_tcp_rst_ack"] = segment_data_no["input_tcp_rst_ack"] + 1
+                    elif traff_check == "Output": segment_data_no["output_tcp_syn"] = segment_data_no["output_tcp_syn"] + 1
+                    elif traff_check == "Internal traffic": segment_data_no["internal_tcp_syn"] = segment_data_no["internal_tcp_syn"] + 1
+                    return segment_data_no
                 elif headers[0][2].flags == 4:
                     if traff_check == "Input": segment_data_no["input_tcp_rst"] = segment_data_no["input_tcp_rst"] + 1
-                    elif traff_check == "Output": segment_data_no["output_tcp_rst"] = segment_data_no["output_tcp_rst"] + 1
-                    elif traff_check == "Internal traffic": segment_data_no["internal_tcp_rst"] = segment_data_no["internal_tcp_rst"] + 1
+                    elif traff_check == "Output": segment_data_no["output_tcp_rst_ack"] = segment_data_no["output_tcp_rst_ack"] + 1
+                    elif traff_check == "Internal traffic": segment_data_no["internal_tcp_rst_ack"] = segment_data_no["internal_tcp_rst_ack"] + 1
                     return segment_data_no
-                elif headers[0][2].flags == 20:
+                elif headers[0][2].flags == 18:
                     if traff_check == "Input": segment_data_no["input_tcp_syn_ack"] = segment_data_no["input_tcp_syn_ack"] + 1
                     elif traff_check == "Output": segment_data_no["output_tcp_syn_ack"] = segment_data_no["output_tcp_syn_ack"] + 1
                     elif traff_check == "Internal traffic": segment_data_no["internal_tcp_syn_ack"] = segment_data_no["internal_tcp_syn_ack"] + 1
