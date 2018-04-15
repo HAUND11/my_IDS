@@ -127,16 +127,11 @@ class SETTINGS_BOT():
         (Connect_result, socket_main, pubkey_for_server) = self.connect_to_server(configurate_bot["server_ip"],configurate_bot["network_ip"])
         if Create_DB_result and Get_config_result and Scan_result and Connect_result:
             ip_mac_hosts = DATA.GET_ALL_DATA_ARP_HOST(self)
-            self.bot_work_result(True,socket_main,pubkey_for_server,ip_mac_hosts)
+            time.sleep(5)
+            SEND_DATA.bot_work_result(True,socket_main,pubkey_for_server,ip_mac_hosts)
             SNIFFER(configurate_bot["host_ip"],socket_main,configurate_bot["main_network_ip"],configurate_bot["network_mask"],ip_mac_hosts,pubkey_for_server)
         else:
             self.bot_work_result(False, 0, 0,0)
-
-    def bot_work_result(self,Settings_result, socket_main,pubkey_for_server,ip_mac_hosts):
-        if Settings_result:
-            print(ip_mac_hosts)
-        else:
-            socket_main.sendall("Error")
 
     def scan_ip_mac_hosts(self,main_network_arping):
         try:
@@ -229,7 +224,6 @@ class SNIFFER(object):
             segment_data["input_bytes/s"] = segment_static_data["input_bytes"] * 8 / 1024 / 1024 / 10
             segment_data["output_bytes/s"] = segment_static_data["output_bytes"] * 8 / 1024 / 1024 / 10
             segment_data["internal_bytes/s"] = segment_static_data["internal_bytes"] * 8 / 1024 / 1024 / 10
-            print(segment_static_data["arp_1"], segment_static_data["arp_2"])
             for index_keys in segment_static_data:
                 if index_keys != "input_bytes" and index_keys != "output_bytes" and index_keys != "internal_bytes":
                     segment_data[index_keys+"/s"] = segment_static_data[index_keys] / 10
@@ -242,7 +236,6 @@ class SNIFFER(object):
                 segment_data[index_keys_icmp+"/s"] = segment_data_icmp[index_keys_icmp] / 10
                 segment_data_icmp[index_keys_icmp] = 0
 
-            # print(segment_data)
             print("input bytes - {0} :: output - {1} :: interal - {2}".format(segment_data["input_bytes/s"],
                                                                               segment_data["output_bytes/s"],
                                                                               segment_data["internal_bytes/s"]))
@@ -278,6 +271,8 @@ key_warning:
     126 : Pointer indicates the error 	
     127 : Missing a Required Option 
     128 : Bad Length
+    129 : Host get RST
+    130 : Host get RST/ASK
 """
 
 def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server):
@@ -321,7 +316,7 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
 
                 segment_static_data["output_bytes"] = segment_static_data["output_bytes"] + len(packets.original)
 
-                Control_ip_network_result = CONTROL.control_ip_output_network(packets,main_network_ip,host_mask,ip_mac_hosts)
+                Control_ip_network_result = CONTROL.control_ip_output_network(packets,ip_mac_hosts)
                 if Control_ip_network_result == 0:
                     warning_id += 1
                     Control_ip_network_result = "101 - incorrect src ip"
@@ -370,7 +365,7 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                     SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result_src)
 
-                Control_ip_network_result_dst = CONTROL.control_ip_output_network(packets, main_network_ip, host_mask, ip_mac_hosts)
+                Control_ip_network_result_dst = CONTROL.control_ip_output_network(packets, ip_mac_hosts)
 
                 if Control_ip_network_result_dst == 0:
                     warning_id += 1
@@ -394,6 +389,7 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                     SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
                     print(Control_ip_network_result_dst)
 
+
             (check_type_headers, type_proto ,headers_type, headers_code) = CONTROL.ckeck_headerst_type_protocol(packets)
 
             if check_type_headers ==  True:
@@ -404,10 +400,74 @@ def sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pub
                     if int(Control_ip_network_result_headers[0:3]) == 111:
                         warning_string = "{0}::{1} -> {2}::{3} [{4}] Port {1} in host {0} unreachable".format(packets[0][1].src,packets[0][4].dport,
                                                                      packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 110:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Protocol Unreachable".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 112:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Fragmentation Needed and Don't Fragment was Set ".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 113:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Source Route Failed".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 114:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Destination Network Unknown".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 115:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Destination Host Unknown".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 116:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Source Host Isolated".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 117:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Communication with Destination Network is Administratively Prohibited".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 118:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Communication with Destination Host is Administratively Prohibited".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 119:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Destination Network Unreachable for Type of Service".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 120:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Destination Host Unreachable for Type of Service".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 121:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Communication Administratively Prohibited".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 122:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Host Precedence Violation".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 123:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Precedence cutoff in effect".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 124:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Time to Live exceeded in Transit".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 125:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Fragment Reassembly Time Exceeded".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 126:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Pointer indicates the error".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 127:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Missing a Required Option".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
+                    elif int(Control_ip_network_result_headers[0:3]) == 128:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Bad Length".format(packets[0][1].src,packets[0][4].dport,
+                                                                     packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
                     else:
                         warning_string = "{0}::{1} -> {2}::{3} [{4}]".format(packets[0][1].src,packets[0][4].dport,
                                                                      packets[0][1].dst,packets[0][4].sport, packets[0][1].id)
-
+                elif packets[0][1].proto == 6:
+                    if packets[0][2].flags == 4:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Host {2} get RST".format(packets[0][1].src, packets[0][2].dport,
+                                                                             packets[0][1].dst, packets[0][2].sport,
+                                                                             packets[0][1].id)
+                        Control_ip_network_result_headers = "129-Host get RST"
+                    elif packets[0][2].flags == 20:
+                        warning_string = "{0}::{1} -> {2}::{3} [{4}] Host {2} get RST/ASK".format(packets[0][1].src, packets[0][2].dport,
+                                                                             packets[0][1].dst, packets[0][2].sport,
+                                                                             packets[0][1].id)
+                        Control_ip_network_result_headers = "130-Host get RST"
                 send_data_structure = {"id": warning_id,
                                        "key_warning": int(Control_ip_network_result_headers[0:3]),
                                        "time": time.ctime(),

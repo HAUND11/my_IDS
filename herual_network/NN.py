@@ -201,13 +201,13 @@ if __name__ == "__main__":
          import numpy as np
 
          ins = np.array([summary_input_train_array,input_train_array])
-         outs = np.array([[1], [0]])
+         outs = np.array([[1,0], [0,1]])
 
          model = Sequential()
          model.add(Dense(8, input_dim=95))    # input layer
          model.add(Activation('tanh'))
 
-         model.add(Dense(1))                 # output layer
+         model.add(Dense(2))                 # output layer
          model.add(Activation('sigmoid'))
 
          sgd = SGD(lr=0.1)

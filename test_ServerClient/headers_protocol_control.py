@@ -61,7 +61,9 @@ class CONTROL(object):
             """ check ICMP"""
             if headers_packet[0][1].proto == 1:
                 return True, headers_packet[0][1].proto ,headers_packet[0][2].type, headers_packet[0][2].code
+            elif headers_packet[0][1].proto == 6:
+                return True, None, None, None
 
-        return False, None, None
+        return False, None, None, None
 
 

@@ -6,7 +6,7 @@ def random_headers():
 	hwdst = ("%x:%x:%x:%x:%x:%x" % (random.randint(0,255),random.randint(0,255),random.randint(0,255),random.randint(0,255),random.randint(0,255),random.randint(0,255)))
 	src = ("%i.%i.%i.%i" % (random.randint(1,255),random.randint(1,255),random.randint(1,255),random.randint(1,255)))
 	#dst = ("%i.%i.%i.%i" % (random.randint(1,255),random.randint(1,255),random.randint(1,255),random.randint(1,255)))
-	dst = "192.168.0.105"
+	dst = "192.168.1.1"
 	sport = random.randint(1024,65535)
 	#dport = random.randint(1024,65535)
 	dport = 80
