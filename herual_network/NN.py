@@ -1,9 +1,20 @@
 from scapy.all import *
+import numpy as np
 
-dst_dst = "192.168.0.104"
-src_src = "192.168.0.1"
+"""
+ARP-scan(запросы без ответов)
+TCP-scan()
+UDP-scan
+"""
+
+
+dst_dst = "192.168.9.1"
+src_src = "192.168.9.130"
 
 check_summary = 0
+
+finish_array = []
+rezult_array = []
 
 segment_data_no = {"arp_1" : 0,
                        "arp_2" : 1,
@@ -65,7 +76,8 @@ input_train_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 summary_input_train_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
                      0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
-
+rezult_array_pcap = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 class READ_TRAFFIC(object):
 
@@ -76,10 +88,13 @@ class READ_TRAFFIC(object):
     def network_traffic_in_ou_inp(headers_packet):
         if headers_packet.type == 2048:
             if headers_packet[1].dst == dst_dst:
+                input_train_array[3] = input_train_array[3] + len(headers_packet)
                 return "Output"
             elif headers_packet[1].dst == src_src:
+                input_train_array[2] = input_train_array[2] + len(headers_packet)
                 return "Input"
             else:
+                input_train_array[4] = input_train_array[4] + len(headers_packet)
                 return "Internal traffic"
 
     def segment_data_check(headers,traff_check):
@@ -166,53 +181,144 @@ class READ_TRAFFIC(object):
         global check_summary
         check_summary += 1
         for index in range(0,95):
-            summary_input_train_array[index] = summary_input_train_array[index] + input_train_array[index] / 10
+            if index == 2 or index == 3 or index == 4:
+                summary_input_train_array[index] = summary_input_train_array[index] + input_train_array[index] * 8 / 1024 / 1024 / 1
+            else:
+                summary_input_train_array[index] = summary_input_train_array[index] + input_train_array[index] / 1
             input_train_array[index] = 0
 
+    def create_data_train():
+        array_train = np.array([[]])
+        all_arrays = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]])
+        value = {"flood": [0, 0, 0, 0, 0, 0, 1], "normal": [0, 0, 0, 0, 0, 0, 0]}
+        reault_train = np.array([value["normal"]])
+        for index_index_array in range(0,94):
+            if index_index_array != 2 or index_index_array != 3 or index_index_array != 4:
+                for index_array_5 in range(0,95):
+                    for index_num in range(0,95):
+                        if index_index_array == index_num:
+                            array_train = np.append(array_train,3000/1)
+                        elif index_array_5 == index_num:
+                            array_train = np.append(array_train, 1 / 1)
+                        else:
+                            array_train = np.append(array_train, 0 / 1)
+                    asdasd = np.array([array_train])
+                    all_arrays = np.concatenate((all_arrays,asdasd))
+                    asdasd = np.array([value["flood"]])
+                    reault_train = np.concatenate((reault_train,asdasd))
+                    array_train = np.array([])
 
-
+        return all_arrays,reault_train
 if __name__ == "__main__":
-     pcap_file = READ_TRAFFIC.read_pcap("nmap_sT.pcap")
-     index_packet = 0
-     time_start = pcap_file[0].time
-     try:
-         while True:
-            if pcap_file[index_packet].time - time_start <= 10:
-                status_packet = READ_TRAFFIC.network_traffic_in_ou_inp(pcap_file[index_packet])
-                READ_TRAFFIC.segment_data_check(pcap_file[index_packet],status_packet)
-                index_packet+=1
-            else:
-                time_start = pcap_file[index_packet].time
-                READ_TRAFFIC.clear_array()
-     except:
-         if check_summary == 0 :
-             for index_in in range(0,95):
-                 summary_input_train_array[index_in]  = input_train_array[index_in] / 1
-                 input_train_array[index_in] = 0
-         else:
-             for index in range(0, 95):
-                 summary_input_train_array[index] = summary_input_train_array[index] / check_summary
-         print(summary_input_train_array)
-         print("Finish")
+     all_pcap_file =[ 'arp_scan.pcap', 'nmap_sN_192.168.9.130_192.168.9.1.pcap', 'nmap_sX_192.168.9.130_192.168.9.1.pcap',
+     'nmap_sA_192.168.9.130_192.168.9.1.pcap',  'nmap_sS_192.168.9.130_192.168.9.1.pcap',  'nmap_sU_192.168.9.130_192.168.9.1.pcap',
+       'nmap_sF_192.168.9.130_192.168.9.1.pcap', 'nmap_sT_192.168.9.130_192.168.9.1.pcap']#,'flood_TR.pcap', 'flood_TRA.pcap','flood_TS.pcap']
 
-         from keras.models import Sequential
-         from keras.layers.core import Dense, Dropout, Activation
-         from keras.optimizers import SGD
-         import numpy as np
+     # ins, outs = READ_TRAFFIC.create_data_train()
 
-         ins = np.array([summary_input_train_array,input_train_array])
-         outs = np.array([[1,0], [0,1]])
+     # for index_pcap in all_pcap_file:
+     #     pcap_file = READ_TRAFFIC.read_pcap(index_pcap)
+     #     index_packet = 0
+     #     time_start = pcap_file[0].time
+     #     try:
+     #         while True:
+     #            if pcap_file[index_packet].time - time_start <= 1:
+     #                status_packet = READ_TRAFFIC.network_traffic_in_ou_inp(pcap_file[index_packet])
+     #                READ_TRAFFIC.segment_data_check(pcap_file[index_packet],status_packet)
+     #                index_packet+=1
+     #            else:
+     #                time_start = pcap_file[index_packet].time
+     #                READ_TRAFFIC.clear_array()
+     #     except:
+     #         if check_summary == 0 :
+     #             for index in range(0, 95):
+     #                 summary_input_train_array[index] = summary_input_train_array[index] + input_train_array[index] / 1
+     #             for index_in in range(0,95):
+     #                 summary_input_train_array[index_in]  = input_train_array[index_in] / 1
+     #                 input_train_array[index_in] = 0
+     #         else:
+     #             for index in range(0, 95):
+     #                 summary_input_train_array[index] = summary_input_train_array[index] + input_train_array[index] / 1
+     #             for index in range(0, 95):
+     #                 summary_input_train_array[index] = summary_input_train_array[index] / check_summary
+     #         print(index_pcap)
+     #         print(summary_input_train_array)
+     #         rezult_array_pcap.append(summary_input_train_array)
+     #         for index in range(0, 95):
+     #             summary_input_train_array[index] = 0
+     #             input_train_array[index] = 0
 
-         model = Sequential()
-         model.add(Dense(8, input_dim=95))    # input layer
-         model.add(Activation('tanh'))
+     # rezult_pcap = {"arp_scan" : [1,0,0,0,0,0,0],
+     #                "sN": [0, 1, 0, 0, 0, 0, 0],
+     #                "sX": [1, 1, 0, 0, 0, 0, 0],
+     #                "sA": [0, 0, 1, 0, 0, 0, 0],
+     #                "sS": [1, 0, 1, 0, 0, 0, 0],
+     #                "sU": [0, 1, 1, 0, 0, 0, 0],
+     #                "sF": [1, 1, 1, 0, 0, 0, 0],
+     #                "sT": [0, 0, 0, 1, 0, 0, 0],}
+     # ins = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+     #                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]], dtype='float32')
+     # outs = np.array([[0,0,0,0,0,0,0]])
+     # ins = np.concatenate((ins,rezult_array_pcap))
+     # outs = np.concatenate((outs, np.array([[0,0,0,0,0,0,0]])))
+     # outs = np.concatenate((outs,np.array([rezult_pcap["arp_scan"]])))
+     # outs = np.concatenate((outs, np.array([rezult_pcap["sN"]])))
+     # outs = np.concatenate((outs, np.array([rezult_pcap["sX"]])))
+     # outs = np.concatenate((outs, np.array([rezult_pcap["sA"]])))
+     # outs = np.concatenate((outs, np.array([rezult_pcap["sS"]])))
+     # outs = np.concatenate((outs, np.array([rezult_pcap["sU"]])))
+     # outs = np.concatenate((outs, np.array([rezult_pcap["sF"]])))
+     # outs = np.concatenate((outs, np.array([rezult_pcap["sT"]])))
 
-         model.add(Dense(2))                 # output layer
-         model.add(Activation('sigmoid'))
+     ins = np.array([[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[300,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,300,0,0,0,0,0,0,0,0,0,0,0,300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,300,0,0,0,0,0,0,0,0,0,0,300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,300,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]])
+     outs = np.array([[0,0,0,0,0,0,0],
+                      [1, 0, 0, 0, 0, 0, 0],
+                      [0, 1, 1, 0, 0, 0, 0],
+                      [0, 1, 0, 1, 0, 0, 0],
+                      [0, 1, 0, 0, 1, 0, 0],
+                      [0, 0, 1, 1, 0, 0, 0],
+                      [0, 0, 1, 0, 1, 0, 0],
+                      [0, 0, 1, 0, 0, 1, 0],
+                      [0, 0, 0, 0, 0, 1, 1],
+                      [0, 0, 0, 0, 1, 0, 1],
+                      [0, 0, 0, 1, 0, 0, 1]])
 
-         sgd = SGD(lr=0.1)
-         model.compile(loss='binary_crossentropy', optimizer=sgd, metrics=['accuracy'])
-         model.fit(ins, outs, batch_size=1, epochs=100)
+     from keras.models import Sequential
+     from keras.layers.core import Dense, Dropout, Activation
+     from keras.optimizers import SGD
+     from keras.models import model_from_json
+     import numpy as np
 
-         print("scan", model.predict_proba(np.array([summary_input_train_array])))
-         print("all ok", model.predict_proba(np.array([input_train_array])))
+     model = Sequential()
+     model.add(Dense(64, input_dim=95))    # input layerbatch_size=
+     model.add(Activation('tanh'))
+     model.add(Dropout(0,5))
+     model.add(Dense(64, input_dim=95))  # input layer
+     model.add(Activation('tanh'))
+     model.add(Dropout(0,5))
+     model.add(Dense(7))                 # output layer
+     model.add(Activation('sigmoid')) # sigmoid - %, softmax
+
+     sgd = SGD(lr=0.1)
+     model.compile(loss='binary_crossentropy', optimizer='rmsprop', metrics=['accuracy'])
+     model.fit(ins, outs,batch_size=32 ,epochs=100)
+     for index_test in range(0,11):
+        rezult = model.predict(np.array([ins[index_test]]))
+        print("{}. - ".format(index_test),np.around(rezult) )
+     model_json = model.to_json()
+     with open("model.json", "w") as json_file:
+            json_file.write(model_json)
+
+     model.save_weights("model.h5")
+     print("Saved model to disk")

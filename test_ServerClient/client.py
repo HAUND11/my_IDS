@@ -15,6 +15,13 @@ from headers_protocol_control import *
 from static_data_trafic.db import *
 from segment_network_data import *
 
+from keras.models import Sequential
+from keras.layers.core import Dense, Dropout, Activation
+from keras.optimizers import SGD
+from keras.models import model_from_json
+import numpy as np
+
+
 warning_id = 0
 segment_static_data = {"arp_1" : 0,
                        "arp_2" : 0,
@@ -42,6 +49,73 @@ segment_static_data = {"arp_1" : 0,
                    "output_tcp_syn": 0,
                    "output_tcp_rst": 0,
                    "output_tcp_ack": 0}
+
+abnormal_structure = {"Abnormal network traffic detected: ARP scaning" : [1, 0, 0, 0, 0, 0, 0],
+                     "Abnormal network traffic detected: Internal UDP flood or scaning" : [0, 1, 1, 0, 0, 0, 0],
+                     "Abnormal network traffic detected: Input UDP flood or scaning": [0, 1, 0, 1, 0, 0, 0],
+                     "Abnormal network traffic detected: Output UDP flood or scaning": [0, 1, 0, 0, 1, 0, 0],
+                     "Abnormal network traffic detected: Internal UDP scaning": [0, 0, 1, 1, 0, 0, 0],
+                     "Abnormal network traffic detected: Input UDP scaning": [0, 0, 1, 0, 1, 0, 0],
+                     "Abnormal network traffic detected: Output UDP scaning": [0, 0, 1, 0, 0, 1, 0],
+                     "Abnormal network traffic detected: Internal TCP(flags - SYN) flood": [0, 0, 0, 0, 0, 1, 1],
+                     "Abnormal network traffic detected: Input TCP(flags - SYN) flood": [0, 0, 0, 0, 1, 0, 1],
+                     "Abnormal network traffic detected: Output TCP(flags - SYN) flood": [0, 0, 0, 1, 0, 0, 1]}
+
+segment_data_no = {"arp_1/s" : 0,
+                       "arp_2/s" : 1,
+                    "input_bytes/s" : 2,
+                   "output_bytes/s" : 3,
+                   "internal_bytes/s" : 4,
+                   "internal_tcp_syn/s": 5,
+                   "internal_tcp_rst/s": 6,
+                   "internal_tcp_ack/s": 7,
+                   "internal_tcp_syn_ack/s": 8,
+                   "internal_tcp_psh_ack/s": 9,
+                   "internal_udp/s": 10,
+                   "input_tcp_syn/s": 11,
+                   "input_tcp_rst/s": 12,
+                   "input_tcp_ack/s": 13,
+                   "input_tcp_syn_ack/s": 14,
+                   "input_tcp_psh_ack/s": 15,
+                   "input_udp/s": 16,
+                   "output_udp/s": 17,
+                   "output_tcp_syn_ack/s": 18,
+                   "output_tcp_psh_ack/s": 19,
+                   "output_tcp_syn/s": 20,
+                   "output_tcp_rst/s": 21,
+                   "output_tcp_ack/s": 22,
+                       "Input_icmp_0_0/s": 23, "Input_icmp_8_0/s": 24,
+                       "Input_icmp_3_0/s": 25, "Input_icmp_3_1/s": 26, "Input_icmp_3_2/s": 27, "Input_icmp_3_3/s": 28,
+                       "Input_icmp_3_4/s": 29,
+                       "Input_icmp_3_5/s": 30, "Input_icmp_3_6/s": 31, "Input_icmp_3_7/s": 32, "Input_icmp_3_8/s": 33,
+                       "Input_icmp_3_9/s": 34,
+                       "Input_icmp_3_10/s": 35, "Input_icmp_3_11/s": 36, "Input_icmp_3_12/s": 37, "Input_icmp_3_13/s": 38,
+                       "Input_icmp_3_14/s": 39, "Input_icmp_3_15/s": 40,
+                       "Input_icmp_11_0/s": 41, "Input_icmp_11_1/s": 42,
+                       "Input_icmp_12_0/s": 43, "Input_icmp_12_1/s": 44, "Input_icmp_12_2/s": 45,
+                       "Output_icmp_0_0/s": 46, "Output_icmp_8_0/s": 47,
+                       "Output_icmp_3_0/s": 48, "Output_icmp_3_1/s": 49, "Output_icmp_3_2/s": 50, "Output_icmp_3_3/s": 51,
+                       "Output_icmp_3_4/s": 52,
+                       "Output_icmp_3_5/s": 53, "Output_icmp_3_6/s": 54, "Output_icmp_3_7/s": 55, "Output_icmp_3_8/s": 56,
+                       "Output_icmp_3_9/s": 57,
+                       "Output_icmp_3_10/s": 58, "Output_icmp_3_11/s": 59, "Output_icmp_3_12/s": 60, "Output_icmp_3_13/s": 61,
+                       "Output_icmp_3_14/s": 62, "Output_icmp_3_15/s": 63,
+                       "Output_icmp_11_0/s": 64, "Output_icmp_11_1/s": 65,
+                       "Output_icmp_12_0/s": 66, "Output_icmp_12_1/s": 67, "Output_icmp_12_2/s": 68,
+                       "Internal_icmp_0_0/s": 69, "Internal_icmp_8_0/s": 70,
+                       "Internal_icmp_3_0/s": 71, "Internal_icmp_3_1/s": 72, "Internal_icmp_3_2/s": 73, "Internal_icmp_3_3/s": 74,
+                       "Internal_icmp_3_4/s": 75,
+                       "Internal_icmp_3_5/s": 76, "Internal_icmp_3_6/s": 77, "Internal_icmp_3_7/s": 78, "Internal_icmp_3_8/s": 79,
+                       "Internal_icmp_3_9/s": 80,
+                       "Internal_icmp_3_10/s": 81, "Internal_icmp_3_11/s": 82, "Internal_icmp_3_12/s": 83,
+                       "Internal_icmp_3_13/s": 84, "Internal_icmp_3_14/s": 85, "Internal_icmp_3_15/s": 86,
+                       "Internal_icmp_11_0/s": 87, "Internal_icmp_11_1/s": 88,
+                       "Internal_icmp_12_0/s": 89, "Internal_icmp_12_1/s": 90, "Internal_icmp_12_2/s": 91,
+                        "input_tcp_rst_ack/s": 92,
+                        "internal_tcp_rst_ack/s": 93,
+                        "output_tcp_rst_ack/s": 94,
+
+                       }
 
 key_warning_structure = {
     3 : { 0 : "108-Net Unreachable",
@@ -203,7 +277,7 @@ Main Sniff class
 class SNIFFER(object):
 
     def __init__(self,host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server):
-        time_time =  threading.Thread(target=SNIFFER.segment_data_save)
+        time_time =  threading.Thread(target=SNIFFER.segment_data_save,args=(socket_main, pubkey_for_server,main_network_ip))
         time_time.daemon = True
         time_time.start()
         sniff(prn=sniff_packets(host_ip,socket_main,main_network_ip,host_mask,ip_mac_hosts,pubkey_for_server))
@@ -213,7 +287,7 @@ class SNIFFER(object):
     """
 
 
-    def segment_data_save():
+    def segment_data_save(socket_main, pubkey_for_server,main_network_ip):
         while True:
             time.sleep(10)
 
@@ -236,9 +310,35 @@ class SNIFFER(object):
                 segment_data[index_keys_icmp+"/s"] = segment_data_icmp[index_keys_icmp] / 10
                 segment_data_icmp[index_keys_icmp] = 0
 
-            print("input bytes - {0} :: output - {1} :: interal - {2}".format(segment_data["input_bytes/s"],
-                                                                              segment_data["output_bytes/s"],
-                                                                              segment_data["internal_bytes/s"]))
+            # load json and create model
+            json_file = open('model.json', 'r')
+            loaded_model_json = json_file.read()
+            json_file.close()
+            loaded_model = model_from_json(loaded_model_json)
+            # load weights into new model
+            loaded_model.load_weights("model.h5")
+
+            input_array = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+                     0, 0, 0, 0, 0, 0, 0, 0, 0, 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+            for index_input_array in segment_data.keys():
+                input_array[segment_data_no[index_input_array]] = segment_data[index_input_array]
+
+            rezult_predict = loaded_model.predict(np.array([input_array]))
+
+            for index_abnormal in abnormal_structure.keys():
+                if np.array_equal(np.around(rezult_predict), [abnormal_structure[index_abnormal]]):
+                    print(index_abnormal)
+                    send_data_structure = {"id": 0,
+                                           "key_warning": 0,
+                                           "time": time.ctime(),
+                                           "main_network_ip": main_network_ip,
+                                           "warning": index_abnormal}
+                    SEND_DATA.send_to_server_warning("warning", socket_main, pubkey_for_server, send_data_structure)
+
+
+            # print("input bytes - {0} :: output - {1} :: interal - {2}".format(segment_data["input_bytes/s"],
+            #                                                                   segment_data["output_bytes/s"],
+            #                                                                   segment_data["internal_bytes/s"]))
 
 
 """

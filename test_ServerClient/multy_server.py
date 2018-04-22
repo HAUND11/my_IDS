@@ -226,7 +226,7 @@ class App(QWidget):
         button_push.move(1080, 780)
         self.param_table_to_host.resize(454, 750)
         self.model_for_table_view_tab = QStandardItemModel(self.param_table_to_host)
-        self.model_for_table_view_tab.setHorizontalHeaderLabels(["Value"])
+        self.model_for_table_view_tab.setHorizontalHeaderLabels(["Value","Comments"])
         self.model_for_table_view_tab.setVerticalHeaderLabels(["100", "101", "102","103","104","105",
                                                            "106", "107", "108", "109", "110", "111",
                                                            "112", "113", "114", "115", "116", "117",
